@@ -1,0 +1,478 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: #f7f7f7;
+  color: #111;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+.header {
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 12px;
+}
+.logo img {
+  display: block;
+  width: 44px;
+  height: 44px;
+}
+.nav {
+  display: none;
+  gap: 18px;
+  align-items: center;
+}
+.nav a {
+  text-decoration: none;
+  color: #111;
+  font-weight: 600;
+  font-size: 14px;
+}
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #25d366;
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.btn-whatsapp:hover {
+  filter: brightness(0.95);
+}
+@media (min-width: 640px) {
+  .nav { display: flex; }
+}
+
+.hero {
+  padding: 40px 16px;
+  text-align: center;
+  background: linear-gradient(135deg, #111 0%, #111 55%, #222 100%);
+  color: #fff;
+  border-radius: 16px;
+  margin: 24px 0;
+}
+.hero h1 {
+  font-size: clamp(28px, 6vw, 44px);
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+.hero p {
+  font-size: 17px;
+  margin-bottom: 20px;
+  color: #ddd;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 22px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.2s;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: #111;
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(0.85);
+}
+.btn-outline {
+  background: transparent;
+  color: #111;
+  border: 2px solid #111;
+}
+.btn-outline:hover:not(:disabled) {
+  background: #111;
+  color: #fff;
+}
+.btn-whatsapp {
+  background: #25d366;
+  color: #fff;
+}
+.btn-whatsapp:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.services {
+  padding: 32px 16px;
+}
+.services h2 {
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 24px;
+}
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.service-card {
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+.service-card:hover {
+  border-color: #111;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+.service-card.selected {
+  border-color: #111;
+  background: #f0f0f0;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.1);
+}
+.service-card .name {
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 6px;
+  display: block;
+}
+.service-card .price {
+  display: block;
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 4px;
+}
+.service-card .duration {
+  font-size: 13px;
+  color: #666;
+}
+.service-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.booking {
+  padding: 32px 16px;
+}
+.booking h2 {
+  font-size: 26px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.booking-note {
+  text-align: center;
+  color: #555;
+  margin-bottom: 24px;
+  font-size: 15px;
+}
+.stepper {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+.step {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #e5e5e5;
+  color: #555;
+  font-size: 13px;
+  font-weight: 700;
+}
+.step.active {
+  background: #111;
+  color: #fff;
+}
+.page {
+  display: none;
+  animation: fadeIn 0.25s ease;
+}
+.page:not([hidden]) {
+  display: block;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.page-instruction {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+.service-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.service-error, .booking-error {
+  color: #b30000;
+  font-size: 14px;
+  margin-bottom: 12px;
+  min-height: 20px;
+}
+.page-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.calendar-wrap {
+  margin-bottom: 20px;
+}
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.btn-cal {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.btn-cal:hover {
+  background: #f0f0f0;
+}
+.calendar-month {
+  font-weight: 800;
+  font-size: 16px;
+}
+.calendar {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 4px;
+}
+.calendar th {
+  font-size: 12px;
+  font-weight: 700;
+  color: #666;
+  text-align: center;
+  padding: 6px 2px;
+  text-transform: uppercase;
+}
+.calendar td {
+  text-align: center;
+  padding: 8px 2px;
+}
+.calendar button.day {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calendar button.day:hover {
+  background: #f0f0f0;
+  border-color: #111;
+}
+.calendar button.day.today {
+  border-color: #111;
+  font-weight: 800;
+}
+.calendar button.day.selected {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+.calendar button.day.out {
+  color: #ddd;
+  border-color: transparent;
+  background: transparent;
+  cursor: default;
+}
+.calendar button.day.disabled {
+  color: #ccc;
+  border-color: #eee;
+  background: #fafafa;
+  cursor: not-allowed;
+}
+.date-input {
+  margin-top: 10px;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  max-width: 260px;
+  display: block;
+}
+.time-wrap {
+  margin-bottom: 22px;
+}
+.time-wrap label {
+  display: block;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.time-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  max-width: 260px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.form-grid.full {
+  grid-column: 1 / -1;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field label {
+  font-weight: 700;
+  font-size: 14px;
+}
+.field .req {
+  color: #b30000;
+}
+.field input {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  width: 100%;
+}
+.field input:focus {
+  outline: 2px solid #111;
+  border-color: #111;
+}
+.field-error {
+  color: #b30000;
+  font-size: 13px;
+  min-height: 16px;
+}
+
+.summary-card {
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 20px;
+  background: #fff;
+  margin-bottom: 16px;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 15px;
+}
+.summary-row:last-child {
+  border-bottom: none;
+}
+.summary-label {
+  font-weight: 700;
+  color: #444;
+}
+.whatsapp-hint {
+  font-size: 13px;
+  color: #666;
+  margin-top: 8px;
+}
+
+.location {
+  padding: 32px 16px;
+  text-align: center;
+}
+.location h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+.footer {
+  background: #111;
+  color: #fff;
+  padding: 32px 16px;
+  margin-top: 40px;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: center;
+  text-align: center;
+}
+.footer-brand img {
+  width: 36px;
+  height: 36px;
+  display: block;
+  margin: 0 auto 8px;
+}
+.footer-brand div {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+}
+.footer-contact p {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.footer-contact a {
+  color: #fff;
+  text-decoration: underline;
+}
+.footer-note {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #aaa;
+  text-align: center;
+}
+@media (min-width: 640px) {
+  .footer-grid { text-align: left; }
+  .footer-brand img { margin: 0; }
+  .footer-brand div { text-align: left; }
+}

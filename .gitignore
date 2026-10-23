@@ -1,0 +1,14 @@
+node_modules/
+.npm-cache/
+dist/
+dist-release/
+test-results/
+playwright-report/
+.vite/
+docs/evidence/*.png
+docs/evidence/lighthouse*.html
+docs/evidence/lighthouse*.json
+*.log
+.env
+.env.*
+!.env.example
