@@ -21,8 +21,7 @@
     <meta property="og:locale" content="es_AR" />
     <link rel="icon" href="./images/favicon.png" type="image/png" />
     <link rel="stylesheet" href="/src/styles.css" />
-    <link rel="stylesheet" href="/src/online-booking.css" />
-    
+
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -41,61 +40,60 @@
   </head>
   <body>
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <!-- Iconos: Tabler Icons (MIT) — https://tabler.io/icons -->
     <svg
       class="icon-library"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
       <symbol id="icon-arrow" viewBox="0 0 24 24">
-        <path d="M5 12h14m-6-6 6 6-6 6" />
+        <path d="M5 12l14 0" />
+        <path d="M13 18l6 -6" />
+        <path d="M13 6l6 6" />
       </symbol>
       <symbol id="icon-external" viewBox="0 0 24 24">
-        <path d="M6 18 18 6M6 6h12v12" />
+        <path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6" />
+        <path d="M11 13l9 -9" />
+        <path d="M15 4h5v5" />
       </symbol>
       <symbol id="icon-scissors" viewBox="0 0 24 24">
-        <circle cx="6" cy="6" r="3" />
-        <circle cx="6" cy="18" r="3" />
-        <path d="m8 8 12 12M8 16 20 4m-8 8h.01" />
+        <path d="M3 7a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+        <path d="M3 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+        <path d="M8.6 8.6l10.4 10.4" />
+        <path d="M8.6 15.4l10.4 -10.4" />
       </symbol>
       <symbol id="icon-pin" viewBox="0 0 24 24">
-        <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" />
-        <circle cx="12" cy="10" r="2.5" />
+        <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+        <path
+          d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"
+        />
       </symbol>
       <symbol id="icon-instagram" viewBox="0 0 24 24">
-        <rect x="3" y="3" width="18" height="18" rx="5" />
-        <circle cx="12" cy="12" r="4" />
-        <path d="M17.5 6.5h.01" />
+        <path
+          d="M3 7a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4l0 -10"
+        />
+        <path d="M8.5 12a3.5 3.5 0 1 0 7 0a3.5 3.5 0 0 0 -7 0" />
+        <path d="M17 7v.01" />
       </symbol>
-      <!-- Brand icons: Tabler Icons (MIT), https://tabler.io/icons -->
-      <symbol id="icon-whatsapp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <symbol id="icon-whatsapp" viewBox="0 0 24 24">
         <path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" />
-        <path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" />
+        <path
+          d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1"
+        />
       </symbol>
-      <symbol id="icon-tiktok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 7.917v4.034a9.948 9.948 0 0 1 -5 -1.951v4.5a6.5 6.5 0 1 1 -8 -6.326v4.326a2.5 2.5 0 1 0 4 2v-11.5h4.083a6.005 6.005 0 0 0 4.917 4.917" />
+      <symbol id="icon-tiktok" viewBox="0 0 24 24">
+        <path
+          d="M21 7.917v4.034a9.948 9.948 0 0 1 -5 -1.951v4.5a6.5 6.5 0 1 1 -8 -6.326v4.326a2.5 2.5 0 1 0 4 2v-11.5h4.083a6.005 6.005 0 0 0 4.917 4.917"
+        />
       </symbol>
       <symbol id="icon-home" viewBox="0 0 24 24">
-        <path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8" />
+        <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+        <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
       </symbol>
-      <symbol id="icon-calendar" viewBox="0 0 24 24">
-        <rect x="3" y="5" width="18" height="16" rx="2" />
-        <path d="M7 3v4m10-4v4M3 11h18m-14 4h2m3 0h2m3 0h1" />
-      </symbol>
-      <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
-      </symbol>
-      <symbol id="icon-sun" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="4" />
-        <path
-          d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
-        />
-      </symbol>
-      <symbol id="icon-sunset" viewBox="0 0 24 24">
-        <path
-          d="M12 10.5v-3m-5.66 5.26-1.41-1.41m14.14 0-1.41 1.41M3 17h18M5.5 14.5l-1.41 1.41m15.82 0-1.41-1.41"
-        />
-        <path d="M8 17a4 4 0 0 1 8 0" />
+      <symbol id="icon-clock" viewBox="0 0 24 24">
+        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+        <path d="M12 7v5l3 3" />
       </symbol>
     </svg>
 
@@ -338,7 +336,7 @@
           </div>
           <noscript
             ><p class="notice">
-              Para usar el calendario, activá JavaScript. También podés
+              Para usar el formulario, activá JavaScript. También podés
               <a href="https://wa.me/5493329606138"
                 >solicitar tu turno directamente por WhatsApp</a
               >.
@@ -349,247 +347,245 @@
             class="booking-panel"
             action="https://wa.me/5493329606138"
             method="get"
+            novalidate
           >
-            <div class="booking-grid">
-                <section class="step-card" aria-labelledby="service-step-title">
-                  <div class="panel-heading">
-                    <span class="panel-number">1</span>
-                    <div>
-                      <h3 id="service-step-title">Elegí el servicio</h3>
-                      <p>Hacé clic en el servicio que querés reservar.</p>
-                    </div>
-                  </div>
-                  <div
-                    id="service-cards"
-                    class="service-prices"
-                    role="group"
-                    aria-label="Servicios disponibles"
-                    aria-describedby="service-detail error-service"
-                  ></div>
-                  <p
-                    id="service-detail"
-                    class="field-hint"
-                    aria-live="polite"
-                  >
-                    Elegí un servicio en la barbería o el corte a domicilio.
-                  </p>
-                  <p id="error-service" class="field-error" hidden></p>
-                  <div id="online-fields" class="booking-native-fields">
-                    <div class="field">
-                      <label for="booking-mode">¿Dónde te atendés?</label>
-                      <select id="booking-mode" required tabindex="-1">
-                        <option value="">Elegí una modalidad</option>
-                        <option value="local">En el local</option>
-                        <option value="home">A domicilio</option>
-                      </select>
-                    </div>
-                    <div class="field">
-                      <label for="booking-service">Elegí el servicio</label>
-                      <select
-                        id="booking-service"
-                        required
-                        tabindex="-1"
-                        aria-describedby="service-detail error-service"
-                      >
-                        <option value="">Elegí un servicio</option>
-                      </select>
-                    </div>
-                  </div>
-                </section>
-                <section
-                  class="step-card"
-                  aria-labelledby="appointment-step-title"
+            <ol class="booking-steps-nav" aria-label="Pasos de la solicitud">
+              <li>
+                <button
+                  type="button"
+                  id="step-tab-1"
+                  class="is-active"
+                  aria-current="step"
                 >
-                  <div class="panel-heading">
-                    <span class="panel-number">2</span>
-                    <div>
-                      <h3 id="appointment-step-title">
-                        Elegí el día y el horario
-                      </h3>
-                      <p>Seleccioná una fecha disponible y luego un horario.</p>
-                    </div>
-                  </div>
-                  <div class="when-grid">
-                    <div class="calendar-card">
-                      <div class="field booking-native-fields">
-                        <label for="date">Fecha preferida</label>
-                        <input
-                          id="date"
-                          name="date"
-                          type="date"
-                          required
-                          tabindex="-1"
-                          aria-describedby="error-date"
-                        />
-                      </div>
-                      <div id="calendar" class="calendar">
-                        <p>El calendario se prepara al cargar la página.</p>
-                      </div>
-                      <p id="error-date" class="field-error" hidden></p>
-                    </div>
-                    <div class="times-card">
-                      <p id="times-date" class="times-date" aria-live="polite"></p>
-                      <div class="field">
-                        <label for="time">Elegí un horario</label>
-                        <select
-                          id="time"
-                          name="time"
-                          required
-                          disabled
-                          aria-describedby="times-date time-hint error-time"
-                        >
-                          <option value="">Elegí servicio y fecha</option>
-                        </select>
-                      </div>
-                      <p id="error-time" class="field-error" hidden></p>
-                      <div id="online-availability">
-                        <p
-                          id="availability-status"
-                          class="booking-online-status"
-                          role="status"
-                        ></p>
-                        <button
-                          id="booking-lookup"
-                          class="button button-small"
-                          type="button"
-                          hidden
-                        >
-                          Actualizar horarios
-                        </button>
-                      </div>
-                      <p id="time-hint" class="field-hint">
-                        Elegí un servicio y una fecha para ver los horarios.
-                        Hora de Argentina. Disponibilidad a confirmar.
-                      </p>
-                    </div>
-                  </div>
-                </section>
-                <section class="step-card" aria-labelledby="details-step-title">
-                  <div class="panel-heading">
-                    <span class="panel-number">3</span>
-                    <div>
-                      <h3 id="details-step-title">Completá tus datos</h3>
-                      <p class="form-intro">
-                        Completá tus datos y continuá por WhatsApp.
-                      </p>
-                    </div>
-                  </div>
-                  <div class="details-grid">
-                    <div class="field">
-                      <label for="name">Nombre y apellido</label>
-                      <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        autocomplete="name"
-                        placeholder="Ej: Juan Pérez"
-                        minlength="2"
-                        maxlength="80"
-                        required
-                        aria-describedby="error-name"
-                      />
-                      <p id="error-name" class="field-error" hidden></p>
-                    </div>
-                    <div id="phone-field" class="field">
-                      <label for="phone">Teléfono / WhatsApp</label>
-                      <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        autocomplete="tel"
-                        inputmode="tel"
-                        maxlength="20"
-                        pattern="\+?[1-9][0-9 \(\)\-]{9,19}"
-                        placeholder="Ej: 3329 12-3456"
-                        aria-describedby="error-phone"
-                      />
-                      <p id="error-phone" class="field-error" hidden></p>
-                    </div>
-                    <div id="address-field" class="field">
-                      <label for="address">Dirección (solo domicilio)</label>
-                      <input
-                        id="address"
-                        name="address"
-                        type="text"
-                        autocomplete="street-address"
-                        placeholder="Ej: Rivadavia 123, Baradero"
-                        minlength="5"
-                        maxlength="180"
-                        aria-describedby="error-address"
-                      />
-                      <p id="error-address" class="field-error" hidden></p>
-                    </div>
-                    <div class="field field-notes">
-                      <label for="notes">Notas (opcional)</label>
-                      <textarea
-                        id="notes"
-                        name="notes"
-                        rows="3"
-                        maxlength="300"
-                        placeholder="Aclaraciones para coordinar el turno…"
-                        aria-describedby="error-notes"
-                      ></textarea>
-                      <p id="error-notes" class="field-error" hidden></p>
-                    </div>
-                  </div>
-                  <div class="booking-preview-strip">
-                    <dl
-                      class="booking-preview"
-                      aria-live="polite"
-                      aria-atomic="true"
+                  <span class="panel-number" aria-hidden="true">1</span>
+                  <span>Servicio</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" id="step-tab-2" disabled>
+                  <span class="panel-number" aria-hidden="true">2</span>
+                  <span>Fecha y horario</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" id="step-tab-3" disabled>
+                  <span class="panel-number" aria-hidden="true">3</span>
+                  <span>Tus datos</span>
+                </button>
+              </li>
+            </ol>
+
+            <section
+              class="step-panel"
+              id="step-1"
+              aria-labelledby="service-step-title"
+              tabindex="-1"
+            >
+              <div class="panel-heading">
+                <span class="panel-number" aria-hidden="true">1</span>
+                <div>
+                  <h3 id="service-step-title">Elegí el servicio</h3>
+                  <p>Tocá el servicio que querés reservar.</p>
+                </div>
+              </div>
+              <div
+                id="service-cards"
+                class="service-cards"
+                role="group"
+                aria-label="Servicios disponibles"
+              ></div>
+            </section>
+
+            <section
+              class="step-panel"
+              id="step-2"
+              aria-labelledby="when-step-title"
+              tabindex="-1"
+              hidden
+            >
+              <div class="panel-heading">
+                <span class="panel-number" aria-hidden="true">2</span>
+                <div>
+                  <h3 id="when-step-title">Elegí la fecha y el horario</h3>
+                  <p>
+                    Seleccioná un día en el calendario. Abajo aparecen los
+                    horarios disponibles.
+                  </p>
+                </div>
+              </div>
+              <p
+                id="chosen-service"
+                class="chosen-service"
+                aria-live="polite"
+              ></p>
+              <div class="when-grid">
+                <div class="calendar-card">
+                  <div class="calendar-header">
+                    <button
+                      type="button"
+                      id="calendar-prev"
+                      class="calendar-nav"
+                      aria-label="Mes anterior"
                     >
-                      <div>
-                        <dt>Tu servicio</dt>
-                        <dd id="preview-service">Sin elegir</dd>
-                      </div>
-                      <div>
-                        <dt>Precio</dt>
-                        <dd id="preview-price">—</dd>
-                      </div>
-                      <div>
-                        <dt>Fecha</dt>
-                        <dd id="preview-date">Sin elegir</dd>
-                      </div>
-                      <div>
-                        <dt>Horario</dt>
-                        <dd id="preview-time">Sin elegir</dd>
-                      </div>
-                    </dl>
-                  </div>
-                  <details class="summary-details">
-                    <summary>Ver resumen de mi solicitud</summary>
-                    <p id="booking-summary"></p>
-                  </details>
-                  <div class="booking-action">
+                      ‹
+                    </button>
                     <p
-                      id="form-status"
-                      class="form-status"
-                      role="status"
+                      id="calendar-title"
+                      class="calendar-title"
                       aria-live="polite"
                     ></p>
                     <button
-                      id="booking-submit"
-                      class="button booking-submit-gold"
-                      type="submit"
-                      disabled
+                      type="button"
+                      id="calendar-next"
+                      class="calendar-nav"
+                      aria-label="Mes siguiente"
                     >
-                      <svg class="icon" aria-hidden="true">
-                        <use href="#icon-whatsapp" />
-                      </svg>
-                      <span>Confirmar turno por WhatsApp</span>
-                      <svg class="icon" aria-hidden="true">
-                        <use href="#icon-arrow" />
-                      </svg>
+                      ›
                     </button>
-                    <p class="form-footnote">
-                      Te vamos a redirigir a WhatsApp con los datos de tu turno
-                      para confirmarlo.
-                    </p>
                   </div>
-                </section>
-            </div>
+                  <div class="calendar-weekdays" aria-hidden="true">
+                    <span>Lu</span><span>Ma</span><span>Mi</span
+                    ><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span>
+                  </div>
+                  <div
+                    id="calendar-days"
+                    class="calendar-days"
+                    role="group"
+                    aria-label="Calendario de fechas"
+                  ></div>
+                  <div class="field native-date-field">
+                    <label for="date-input"
+                      >O escribí la fecha
+                      <span>(día, mes y año)</span></label
+                    >
+                    <input
+                      id="date-input"
+                      name="date"
+                      type="date"
+                      aria-describedby="error-date"
+                    />
+                  </div>
+                  <p id="error-date" class="field-error" hidden></p>
+                </div>
+                <div class="times-card">
+                  <p id="times-heading" class="times-heading" aria-live="polite">
+                    Elegí un día para ver los horarios.
+                  </p>
+                  <div
+                    id="time-slots"
+                    class="time-slots"
+                    role="group"
+                    aria-label="Horarios disponibles"
+                  ></div>
+                  <p id="times-empty" class="times-empty" hidden>
+                    No hay turnos disponibles para este día. Probá con otra
+                    fecha.
+                  </p>
+                  <p id="error-time" class="field-error" hidden></p>
+                  <p class="field-hint">
+                    Turnos de 30 minutos. Hora de Argentina. La disponibilidad
+                    se confirma por WhatsApp.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="step-panel"
+              id="step-3"
+              aria-labelledby="details-step-title"
+              tabindex="-1"
+              hidden
+            >
+              <div class="panel-heading">
+                <span class="panel-number" aria-hidden="true">3</span>
+                <div>
+                  <h3 id="details-step-title">Completá tus datos</h3>
+                  <p>Así te confirmamos el turno por WhatsApp.</p>
+                </div>
+              </div>
+              <div class="details-grid">
+                <div class="field">
+                  <label for="name">Nombre y apellido</label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autocomplete="name"
+                    placeholder="Ej: Juan Pérez"
+                    minlength="2"
+                    maxlength="80"
+                    required
+                    aria-describedby="error-name"
+                  />
+                  <p id="error-name" class="field-error" hidden></p>
+                </div>
+                <div class="field" id="address-field" hidden>
+                  <label for="address">Dirección del domicilio</label>
+                  <input
+                    id="address"
+                    name="address"
+                    type="text"
+                    autocomplete="street-address"
+                    placeholder="Ej: Rivadavia 123, Baradero"
+                    minlength="5"
+                    maxlength="180"
+                    aria-describedby="error-address"
+                  />
+                  <p id="error-address" class="field-error" hidden></p>
+                </div>
+              </div>
+              <div class="booking-preview-strip">
+                <dl
+                  class="booking-preview"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  <div>
+                    <dt>Servicio</dt>
+                    <dd id="preview-service">—</dd>
+                  </div>
+                  <div>
+                    <dt>Precio</dt>
+                    <dd id="preview-price">—</dd>
+                  </div>
+                  <div>
+                    <dt>Fecha</dt>
+                    <dd id="preview-date">—</dd>
+                  </div>
+                  <div>
+                    <dt>Horario</dt>
+                    <dd id="preview-time">—</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="booking-action">
+                <p
+                  id="form-status"
+                  class="form-status"
+                  role="status"
+                  aria-live="polite"
+                ></p>
+                <button
+                  id="booking-submit"
+                  class="button button-whatsapp"
+                  type="submit"
+                >
+                  <svg class="icon" aria-hidden="true">
+                    <use href="#icon-whatsapp" />
+                  </svg>
+                  <span>Pedir este turno por WhatsApp</span>
+                  <svg class="icon" aria-hidden="true">
+                    <use href="#icon-arrow" />
+                  </svg>
+                </button>
+                <p class="form-footnote">
+                  Se abre WhatsApp con tu pedido escrito. Ahí lo enviás y
+                  coordinamos la confirmación.
+                </p>
+              </div>
+            </section>
           </form>
-          <section id="booking-receipt" class="booking-receipt" tabindex="-1" aria-label="Comprobante de reserva" hidden></section>
           <p class="direct-contact">
             ¿Preferís hablar directamente?
             <a href="https://wa.me/5493329606138" data-whatsapp

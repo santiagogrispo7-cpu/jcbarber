@@ -46,12 +46,12 @@ Esta sección y el tablero son la **única fuente editable de avance**. Los hand
 | Fecha del relevamiento inicial | 2026-10-16 |
 | Versión del plan | 1.0 |
 | Raíz | `D:\jcbarber` |
-| Fase | R12 completado: tarjetas con animación hover, check de selección y domicilio $30.000; verificado en Chromium/Firefox/WebKit/móvil |
-| Coordinador activo | OpenCode, sesión 2026-10-22; coordinador único |
-| Tarea reclamada | Ninguna activa; R12 hecho, R08 pendiente externo |
-| Últimas tareas completadas | R12: 24 unitarias, 18 E2E Chromium, tarjetas en Firefox/WebKit/móvil, 4 conectados; build y portable aprobados; capturas de tarjetas en docs/evidence/ |
-| Próxima tarea | R08: activación y publicación del entorno remoto según docs/RESERVAS.md |
-| Paso exacto de reanudación | Artefacto vigente test-results/r12-tarjetas/; abrir http://127.0.0.1:4173/#turnos. Sin subagentes activos |
+| Fase | R13 completado: íconos Tabler oficiales, fondo de la sección de turnos en --paper, tarjetas centradas con reloj/casita y texto externo eliminado; verificado 26/26 con Playwright (Chromium) |
+| Coordinador activo | OpenCode, sesión 2026-10-23; coordinador único |
+| Tarea reclamada | Ninguna activa; R13 hecho, R08 pendiente externo |
+| Últimas tareas completadas | R13: sprite Tabler reemplazado, fondo #faf7f0→#f7f8f8, tarjetas centradas con íconos, #service-detail eliminado; 26/26 checks Playwright; capturas en test-results/ (gitignored) |
+| Próxima tarea | R08: activación y publicación del entorno remoto según docs/RESERVAS.md (externo) |
+| Paso exacto de reanudación | Servidor estático `python -m http.server 4173` en la raíz + abrir http://127.0.0.1:4173/#turnos. Artefactos en test-results/. Sin subagentes activos |
 | Bloqueos del alcance actual | P08: Lighthouse/instalación limpia sin certificar en este entorno. R02: concurrencia nativa y PostgREST/JWT reales pendientes de proyecto Supabase del propietario |
 | Incidencia de entorno | EPERM en dist/images y dist-release/images. Artefacto actualizado sin Supabase en test-results/r11-three-final/, build/portable y E2E aprobados; permisos intactos |
 | Node / npm detectados | Node `v24.19.0`; npm `11.17.0` vía `npm.cmd` |
@@ -930,3 +930,16 @@ El coordinador integra, resuelve solapes (p.ej. si A y B ambos necesitan tocar e
 - **Entrega:** npm.cmd run preview -- --outDir test-results/r12-tarjetas; abrir http://127.0.0.1:4173/#turnos. Portable: test-results/r12-tarjetas/jc-barberhouse.html, conservando recursos al lado.
 - **Pendientes:** activación/migraciones/despliegue remoto R08 y verificaciones históricas de infraestructura no realizadas. No se certifica Supabase remoto mediante la fixture local.
 - **Continuidad:** todos los subagentes cerrados; sin archivos reservados. Esfuerzo no expuesto y compactación no invocable; estado persistido en este handoff.
+
+### Checkpoint R13 — 2026-10-23 — íconos Tabler, fondo de sección y tarjetas centradas (verificado)
+
+- **Contexto:** al retomar, gran parte de `src/` (booking.js, calendar.js, config.js, online-booking.js/css, services.js, whatsapp.js, booking-visual.js, booking-preview.js, booking-api.js, date-utils.js, gallery.js) constaba como borrada en disco frente a git; `src/main.js` quedó autocontenido (sin imports) y `index.html` sólo carga `/src/styles.css` y `/src/main.js`. `npm run build` de Vite falla porque `vite.config.js` importa `scripts/content-plugin.mjs` (borrado) — fuera de alcance, no tocado. Prueba con servidor estático (`python -m http.server 4173`) + Playwright.
+- **Instrucción del usuario:** reemplazar todos los íconos por los oficiales de Tabler Icons (paths exactos de GitHub tabler-icons outline), fondo de la sección de turnos = el "blanco" de la parte de arriba de la página, tarjetas de servicios con la info centrada y más llamativas, ícono de reloj junto a la duración, ícono de casita en el servicio a domicilio, borrar el texto que quedaba fuera del cuadrado del servicio, y mejorar responsive.
+- **Cambios:**
+  - `index.html`: sprite SVG reemplazado por los paths oficiales de Tabler (arrow-right, external-link, scissors, map-pin, brand-instagram, brand-whatsapp, brand-tiktok, home, clock) conservando los ids `icon-*`; borrados los símbolos no usados `icon-calendar`/`icon-sun`/`icon-sunset`; eliminado el párrafo `#service-detail` y su `aria-describedby`.
+  - `src/main.js`: `renderServices` reescrita con `iconEl()` (SVG `<use>` desde el sprite), tarjetas con nombre/precio/meta centrados, fila `🕐 duración` (ícono clock) y fila `🏠 A domicilio` (ícono home, sólo en el servicio de domicilio); `SERVICES` ajustado (`place` corto + `details` aparte); eliminada la línea que escribía `#service-detail`.
+  - `src/styles.css`: `.booking-section { background: var(--paper) }` (#f7f8f8, el mismo que el encabezado/hero; sustituye al crema #faf7f0); `.service-card` centrada (`text-align: center`, `align-items: center`), precio agrandado a 26px navy, check posicionado absoluto arriba a la derecha, `.service-card-meta-row` con íconos 15px, `.service-card-details` para el texto incluido del domicilio; responsive 480px con padding/tipografías ajustadas.
+- **Verificaciones (Playwright, Chromium, 26/26):** sin errores JS; fondo de `.booking-section` = rgb(247,248,248); `#service-detail` eliminado; 4 tarjetas; 4 íconos reloj + 1 casita (sólo domicilio); reloj dibuja contenido (getBBox 11.25); tarjetas centradas; flujo paso 1→2→3; 15 turnos de 30 min (09:00–12:00 y 16:30–20:00); sin campo teléfono; local sin campo domicilio y WhatsApp con mensaje de servicio/precio/hora/nombre; domicilio con validación de dirección requerida y mensaje con domicilio; sin overflow en 390px y 320px; flujo en móvil OK. wa.me redirige a api.whatsapp.com (el texto viaja con `+` como espacio, verificado decodificando).
+- **Capturas:** `test-results/sec-paso1-desktop.png`, `sec-seleccionado-desktop.png`, `sec-paso1-mobile.png`, `sec-domicilio-mobile.png`, `desk-paso2.png`, `desk-paso3.png`, `movil-paso1.png`, `movil-paso2.png` (gitignored).
+- **Pendientes:** R08 (activación/despliegue remoto) sigue externo; `npm run build` de Vite sigue roto por `scripts/content-plugin.mjs` borrado (fuera de alcance); módulos `D` en git sin restaurar (decisión de mantener `main.js` autocontenido por ahora).
+- **Continuidad:** sin subagentes activos. Esfuerzo no expuesto; compactación no invocable. Estado persistido en este checkpoint.
