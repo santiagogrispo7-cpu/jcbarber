@@ -17,37 +17,66 @@ const SERVICES = [
   {
     id: "corte-general",
     name: "Corte general",
-    price: "$18.000",
-    duration: "30 min",
+    amount: 18000,
+    durationMin: 30,
     mode: "local",
     place: "En el local",
-  },
-  {
-    id: "barba",
-    name: "Barba",
-    price: "$10.000",
-    duration: "30 min",
-    mode: "local",
-    place: "En el local",
-  },
-  {
-    id: "perfilado-cejas",
-    name: "Perfilado de cejas",
-    price: "$8.000",
-    duration: "30 min",
-    mode: "local",
-    place: "En el local",
+    closedNote: "Cerrado los domingos",
   },
   {
     id: "corte-domicilio",
     name: "Corte a domicilio",
-    price: "$30.000",
-    duration: "45 min",
+    amount: 20000,
+    sundayAmount: 30000,
+    durationMin: 45,
     mode: "home",
     place: "A domicilio",
     details: "Incluye barba y perfilado de cejas",
   },
+  // Membresías: sólo domicilio, se abonan del 1 al 5 y los turnos del mes se
+  // coordinan por WhatsApp (sin fecha fija en el formulario).
+  {
+    id: "membresia-2",
+    type: "membership",
+    name: "Membresía 2 cortes",
+    amount: 30000,
+    mode: "home",
+    place: "Solo domicilio",
+    details: "Al mes, se abona del 1 al 5",
+  },
+  {
+    id: "membresia-3",
+    type: "membership",
+    name: "Membresía 3 cortes",
+    amount: 45000,
+    mode: "home",
+    place: "Solo domicilio",
+    details: "Al mes, se abona del 1 al 5",
+  },
+  {
+    id: "membresia-4",
+    type: "membership",
+    name: "Membresía 4 cortes",
+    amount: 50000,
+    mode: "home",
+    place: "Solo domicilio",
+    details: "Al mes, se abona del 1 al 5",
+  },
 ];
+
+// Extras del corte general: se ofrecen como complemento, no como servicios
+// independientes. Precios y duraciones según D18.
+const EXTRAS = [
+  { id: "barba", name: "Barba", amount: 10000, durationMin: 30 },
+  {
+    id: "perfilado-cejas",
+    name: "Perfilado de cejas",
+    amount: 8000,
+    durationMin: 30,
+  },
+];
+
+const formatPrice = (amount) => `$${amount.toLocaleString("es-AR")}`;
 
 /* ---------------------------------------------------------------- enlaces */
 
@@ -107,47 +136,93 @@ document.addEventListener("click", (event) => {
 });
 matchMedia("(min-width: 761px)").addEventListener("change", () => closeMenu());
 
-/* --------------------------------------------------------------- galería */
+/* ------------------------------------------------ carrusel del hero */
 
-const dialog = document.getElementById("photo-dialog");
-const fullPhoto = document.getElementById("photo-full");
-let photoOpener;
-document.querySelectorAll(".gallery-link").forEach((link) => {
-  link.addEventListener("click", (event) => {
-    if (
-      event.ctrlKey ||
-      event.metaKey ||
-      event.shiftKey ||
-      typeof dialog.showModal !== "function"
-    )
-      return;
-    event.preventDefault();
-    photoOpener = link;
-    fullPhoto.src = link.href;
-    fullPhoto.alt = link.querySelector("img").alt;
-    document.getElementById("photo-caption").textContent = link.dataset.caption;
-    dialog.showModal();
-    document.body.classList.add("dialog-open");
+const slideshow = document.querySelector("[data-slideshow]");
+if (slideshow) {
+  const slides = Array.from(slideshow.querySelectorAll(".hero-slide"));
+  const dots = Array.from(document.querySelectorAll(".slideshow-dot"));
+  const toggle = document.querySelector(".slideshow-toggle");
+  const controls = document.querySelector(".slideshow-controls");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const INTERVAL_MS = 4500;
+  let current = 0;
+  let timer = null;
+  let paused = reducedMotion.matches;
+
+  function show(index) {
+    current = (index + slides.length) % slides.length;
+    slides.forEach((slide, i) => {
+      const on = i === current;
+      slide.classList.toggle("is-active", on);
+      if (on) slide.removeAttribute("aria-hidden");
+      else slide.setAttribute("aria-hidden", "true");
+    });
+    dots.forEach((dot, i) => {
+      const on = i === current;
+      dot.classList.toggle("is-active", on);
+      if (on) dot.setAttribute("aria-current", "true");
+      else dot.removeAttribute("aria-current");
+    });
+  }
+
+  function stop() {
+    if (timer) clearInterval(timer);
+    timer = null;
+  }
+
+  function start() {
+    stop();
+    if (paused || document.hidden || slides.length < 2) return;
+    timer = setInterval(() => show(current + 1), INTERVAL_MS);
+  }
+
+  function syncToggle() {
+    const label = paused
+      ? "Reanudar el carrusel de fotos"
+      : "Pausar el carrusel de fotos";
+    toggle.setAttribute("aria-label", label);
+    toggle
+      .querySelector("use")
+      .setAttribute("href", paused ? "#icon-play" : "#icon-pause");
+  }
+
+  function setPaused(value) {
+    paused = value;
+    if (paused) stop();
+    else start();
+    syncToggle();
+  }
+
+  controls.hidden = false;
+  dots.forEach((dot, i) => {
+    dot.addEventListener("click", () => {
+      show(i);
+      start();
+    });
   });
-});
-dialog
-  .querySelector(".dialog-close")
-  .addEventListener("click", () => dialog.close());
-dialog.addEventListener("click", (event) => {
-  const box = dialog.getBoundingClientRect();
-  if (
-    event.target === dialog &&
-    (event.clientX < box.left ||
-      event.clientX > box.right ||
-      event.clientY < box.top ||
-      event.clientY > box.bottom)
-  )
-    dialog.close();
-});
-dialog.addEventListener("close", () => {
-  document.body.classList.remove("dialog-open");
-  photoOpener?.focus();
-});
+  toggle.addEventListener("click", () => setPaused(!paused));
+
+  // Sólo avanza mientras el hero está a la vista y la pestaña activa.
+  new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) start();
+        else stop();
+      }
+    },
+    { threshold: 0.25 },
+  ).observe(slideshow);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+    else start();
+  });
+  reducedMotion.addEventListener("change", (event) => setPaused(event.matches));
+
+  show(0);
+  syncToggle();
+  start();
+}
 
 /* -------------------------------------------------- fechas (hora Argentina */
 
@@ -209,13 +284,33 @@ function isDateAllowed(d) {
   return d >= today && d <= max;
 }
 
-/* ------------------------------------------------------- slots de 30 min */
+/* ------------------------------------------- horarios por modalidad (D27) */
 
-const SLOT_MINUTES = 30;
-const WINDOWS = [
-  { start: "09:00", end: "12:30" },
-  { start: "16:30", end: "20:30" },
-];
+// Cada franja ofrece turnos completos dentro de su horario: el local con
+// cortes de 30 min y el domicilio con cortes de 45 min.
+const SCHEDULES = {
+  local: {
+    label: "Horarios en el local",
+    stepMin: 30,
+    windows: [
+      { start: "09:00", end: "12:30" },
+      { start: "16:30", end: "20:30" },
+    ],
+  },
+  home: {
+    label: "Horarios a domicilio",
+    stepMin: 45,
+    windows: [
+      { start: "07:00", end: "08:30" },
+      { start: "12:45", end: "15:45" },
+    ],
+  },
+};
+
+// Antes de elegir un servicio se muestra la franja del local.
+function modeSchedule() {
+  return SCHEDULES[state.service?.mode] || SCHEDULES.local;
+}
 
 function generateSlots(win, stepMin) {
   const [sh, sm] = win.start.split(":").map(Number);
@@ -234,7 +329,8 @@ function slotsForDate(date) {
   const today = argentinaToday();
   const now = argentinaNow();
   const isToday = sameDay(date, today);
-  const all = WINDOWS.flatMap((w) => generateSlots(w, SLOT_MINUTES));
+  const { stepMin, windows } = modeSchedule();
+  const all = windows.flatMap((w) => generateSlots(w, stepMin));
   return all.filter((slot) => {
     if (!isToday) return true;
     const [h, m] = slot.split(":").map(Number);
@@ -247,12 +343,74 @@ function slotsForDate(date) {
 
 const state = {
   service: null,
+  extras: [],
   date: null,
   time: null,
   step: 1,
 };
 
 const $ = (id) => document.getElementById(id);
+
+/* Servicio elegido = tarjeta base + extras tildados (sólo corte general). */
+
+function isMembership() {
+  return state.service?.type === "membership";
+}
+
+function isSunday(date) {
+  return !!date && date.getDay() === 0;
+}
+
+// La peluquería abre de lunes a sábado: con el corte general no se pueden
+// pedir turnos domingo; el corte a domicilio sí se puede ese día.
+function localClosedOnSundays() {
+  return state.service?.mode === "local";
+}
+
+function clearDate() {
+  state.date = null;
+  state.time = null;
+  $("date-input").value = "";
+  hideError("date");
+  hideError("time");
+}
+
+function syncSundayNote() {
+  $("sunday-note").hidden = !localClosedOnSundays();
+}
+
+function activeExtras() {
+  if (state.service?.id !== "corte-general") return [];
+  return EXTRAS.filter((extra) => state.extras.includes(extra.id));
+}
+
+function serviceName() {
+  return [state.service?.name, ...activeExtras().map((extra) => extra.name)]
+    .filter(Boolean)
+    .join(" + ");
+}
+
+// Domicilio: $20.000 de lunes a sábado y $30.000 los domingos (según la fecha
+// elegida); las membresías tienen precio fijo.
+function serviceAmount() {
+  if (!state.service) return 0;
+  if (state.service.sundayAmount && isSunday(state.date)) {
+    return state.service.sundayAmount;
+  }
+  return activeExtras().reduce(
+    (sum, extra) => sum + extra.amount,
+    state.service.amount,
+  );
+}
+
+function serviceDuration() {
+  if (state.service?.durationMin == null) return "";
+  const minutes = activeExtras().reduce(
+    (sum, extra) => sum + extra.durationMin,
+    state.service.durationMin,
+  );
+  return `${minutes} min`;
+}
 
 function setStep(n, { focus = true } = {}) {
   state.step = n;
@@ -261,15 +419,24 @@ function setStep(n, { focus = true } = {}) {
     const tab = $(`step-tab-${i}`);
     tab.classList.toggle("is-active", i === n);
     tab.classList.toggle("is-done", i < n);
-    // Cada tab es un botón para volver a un paso ya completado.
+    // Cada tab es un botón para volver a un paso ya completado. La membresía
+    // no usa calendario: el paso 2 queda inaccesible.
     const canGo =
       i < n ||
-      (i === 2 && !!state.service) ||
-      (i === 3 && !!(state.service && state.date && state.time));
+      (i === 2 && !!state.service && !isMembership()) ||
+      (i === 3 &&
+        !!state.service &&
+        (isMembership() || !!(state.date && state.time)));
     tab.disabled = !canGo;
     tab.setAttribute("aria-current", i === n ? "step" : "false");
   }
-  if (focus) $(`step-${n}`).focus({ preventScroll: true });
+  if (focus) {
+    const panel = $(`step-${n}`);
+    // El scroll suave (CSS) lleva el paso recién abierto a la vista: sin él
+    // el cambio ocurre debajo de la pantalla y parece que no pasó nada.
+    panel.focus({ preventScroll: true });
+    panel.scrollIntoView({ block: "start" });
+  }
 }
 
 // Volver a un paso desde la barra de progreso.
@@ -293,69 +460,186 @@ function iconEl(name) {
   return svg;
 }
 
-function renderServices() {
-  const grid = $("service-cards");
-  grid.innerHTML = "";
-  SERVICES.forEach((service) => {
-    const card = document.createElement("label");
-    card.className = "service-card";
-    card.dataset.id = service.id;
+function serviceCard(service) {
+  const card = document.createElement("label");
+  card.className = "service-card";
+  card.dataset.id = service.id;
 
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = "service";
-    input.value = service.id;
-    input.className = "sr-only";
+  const input = document.createElement("input");
+  input.type = "radio";
+  input.name = "service";
+  input.value = service.id;
+  input.className = "sr-only";
 
-    const check = document.createElement("span");
-    check.className = "service-card-check";
-    check.setAttribute("aria-hidden", "true");
-    check.textContent = "✓";
+  const check = document.createElement("span");
+  check.className = "service-card-check";
+  check.setAttribute("aria-hidden", "true");
+  check.textContent = "✓";
 
-    const name = document.createElement("span");
-    name.className = "service-card-name";
-    name.textContent = service.name;
+  const name = document.createElement("span");
+  name.className = "service-card-name";
+  name.textContent = service.name;
 
-    const price = document.createElement("span");
-    price.className = "service-card-price";
-    price.textContent = service.price;
+  const price = document.createElement("span");
+  price.className = "service-card-price";
+  price.textContent = formatPrice(service.amount);
 
-    const meta = document.createElement("span");
-    meta.className = "service-card-meta";
+  const meta = document.createElement("span");
+  meta.className = "service-card-meta";
 
+  if (service.durationMin != null) {
     const durationRow = document.createElement("span");
     durationRow.className = "service-card-meta-row";
-    durationRow.append(iconEl("clock"), document.createTextNode(service.duration));
+    durationRow.append(
+      iconEl("clock"),
+      document.createTextNode(`${service.durationMin} min`),
+    );
     meta.append(durationRow);
+  }
 
-    const placeRow = document.createElement("span");
-    placeRow.className = "service-card-meta-row";
-    if (service.mode === "home") {
-      placeRow.append(iconEl("home"), document.createTextNode(service.place));
-    } else {
-      placeRow.textContent = service.place;
-    }
-    meta.append(placeRow);
+  const placeRow = document.createElement("span");
+  placeRow.className = "service-card-meta-row";
+  if (service.mode === "home") {
+    placeRow.append(iconEl("home"), document.createTextNode(service.place));
+  } else {
+    placeRow.textContent = service.place;
+  }
+  meta.append(placeRow);
 
-    if (service.details) {
-      const details = document.createElement("span");
-      details.className = "service-card-details";
-      details.textContent = service.details;
-      meta.append(details);
-    }
+  if (service.details) {
+    const details = document.createElement("span");
+    details.className = "service-card-details";
+    details.textContent = service.details;
+    meta.append(details);
+  }
 
-    card.append(input, check, name, price, meta);
-    input.addEventListener("change", () => selectService(service));
-    grid.append(card);
+  if (service.closedNote) {
+    const note = document.createElement("span");
+    note.className = "service-card-note is-muted";
+    note.textContent = service.closedNote;
+    meta.append(note);
+  }
+
+  if (service.sundayAmount) {
+    const note = document.createElement("span");
+    note.className = "service-card-note";
+    note.textContent = `Domingos ${formatPrice(service.sundayAmount)}`;
+    meta.append(note);
+  }
+
+  card.append(input, check, name, price, meta);
+  input.addEventListener("change", () => selectService(service));
+  return card;
+}
+
+// Dos grillas en el paso 1: servicios sueltos y membresías (sólo domicilio).
+function renderServices() {
+  const grid = $("service-cards");
+  const memberships = $("membership-cards");
+  grid.innerHTML = "";
+  memberships.innerHTML = "";
+  SERVICES.forEach((service) => {
+    const target = service.type === "membership" ? memberships : grid;
+    target.append(serviceCard(service));
   });
+}
+
+function renderExtras() {
+  const wrap = $("extra-chips");
+  wrap.innerHTML = "";
+  EXTRAS.forEach((extra) => {
+    const chip = document.createElement("label");
+    chip.className = "extra-chip";
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.name = "extras";
+    input.value = extra.id;
+    input.className = "sr-only";
+
+    const name = document.createElement("span");
+    name.className = "extra-chip-name";
+    name.textContent = extra.name;
+
+    const price = document.createElement("span");
+    price.className = "extra-chip-price";
+    price.textContent = `+${formatPrice(extra.amount)}`;
+
+    chip.append(input, name, price);
+    input.addEventListener("change", syncExtras);
+    wrap.append(chip);
+  });
+}
+
+// Tildes de extras → total, resumen y vista previa; el paso no cambia hasta
+// que la persona pulse "Continuar".
+function syncExtras() {
+  state.extras = Array.from(
+    $("extra-chips").querySelectorAll("input:checked"),
+  ).map((input) => input.value);
+  syncExtrasPanel();
+  updateChosenService();
+  updatePreview();
+}
+
+function syncExtrasPanel() {
+  const isCut = state.service?.id === "corte-general";
+  const membership = isMembership();
+  $("service-extras").hidden = !isCut;
+  $("membership-conditions").hidden = !membership;
+  $("membership-total").hidden = !membership;
+  $("membership-continue").hidden = !membership;
+  // "Continuar" acompaña a los dos cortes; la membresía usa el suyo propio.
+  $("service-continue").hidden = !state.service || membership;
+  $("extra-chips")
+    .querySelectorAll("input")
+    .forEach((input) => {
+      input.checked = state.extras.includes(input.value);
+    });
+  $("extra-total").textContent = `Total del servicio: ${formatPrice(
+    serviceAmount(),
+  )}`;
+  if (membership) {
+    $("membership-total").textContent = `Total de la membresía: ${formatPrice(
+      serviceAmount(),
+    )}`;
+  }
+}
+
+function updateChosenService() {
+  if (!state.service) {
+    $("chosen-service").textContent = "";
+    return;
+  }
+  const price = formatPrice(serviceAmount());
+  const base = `Servicio elegido: ${serviceName()} · ${price}`;
+  if (isMembership()) {
+    $("chosen-service").textContent = `${base} · A coordinar por WhatsApp`;
+    return;
+  }
+  $("chosen-service").textContent = `${base} · ${serviceDuration()}`;
 }
 
 function selectService(service) {
   state.service = service;
+  const isCut = service.id === "corte-general";
+  const membership = service.type === "membership";
+  if (!isCut) state.extras = [];
+  if (membership) {
+    // La membresía no usa calendario: se limpia cualquier fecha elegida.
+    clearDate();
+  } else if (service.mode === "local" && isSunday(state.date)) {
+    // Los domingos la peluquería está cerrada: ese día sólo hay domicilio.
+    clearDate();
+  }
+
   document.querySelectorAll(".service-card").forEach((card) => {
     card.classList.toggle("is-selected", card.dataset.id === service.id);
   });
-  $("chosen-service").textContent = `Servicio elegido: ${service.name} · ${service.price} · ${service.duration}`;
+
+  syncExtrasPanel();
+  syncSundayNote();
+  updateChosenService();
 
   const addressField = $("address-field");
   addressField.hidden = service.mode !== "home";
@@ -366,11 +650,13 @@ function selectService(service) {
     const slots = slotsForDate(state.date);
     if (!slots.includes(state.time)) state.time = null;
   }
+  renderCalendar();
   renderTimeSlots();
   updatePreview();
 
-  if (state.date && state.time) setStep(3);
-  else setStep(2);
+  // Elegir un servicio nunca salta de paso solo: el cliente avanza con su
+  // botón "Continuar" (al paso 3 si ya quedaron fecha y horario).
+  setStep(1, { focus: false });
 }
 
 /* Paso 2 — calendario */
@@ -395,6 +681,7 @@ function renderCalendar() {
 
   const grid = $("calendar-days");
   grid.innerHTML = "";
+  const closedSunday = localClosedOnSundays();
 
   for (let i = 0; i < offset; i += 1) {
     const padCell = document.createElement("span");
@@ -409,8 +696,11 @@ function renderCalendar() {
     btn.type = "button";
     btn.className = "calendar-day";
     btn.textContent = String(day);
-    const allowed = isDateAllowed(d);
+    const inRange = isDateAllowed(d);
+    const sundayClosed = closedSunday && d.getDay() === 0;
+    const allowed = inRange && !sundayClosed;
     btn.disabled = !allowed;
+    if (sundayClosed) btn.classList.add("is-closed-sunday");
     if (sameDay(d, today)) {
       btn.classList.add("is-today");
       btn.setAttribute("aria-current", "date");
@@ -421,10 +711,12 @@ function renderCalendar() {
     } else {
       btn.setAttribute("aria-pressed", "false");
     }
-    btn.setAttribute(
-      "aria-label",
-      `${formatLong(d)}${allowed ? "" : " (no disponible)"}`,
-    );
+    const suffix = !inRange
+      ? " (no disponible)"
+      : sundayClosed
+        ? " (la peluquería está cerrada los domingos)"
+        : "";
+    btn.setAttribute("aria-label", `${formatLong(d)}${suffix}`);
     if (allowed) {
       btn.addEventListener("click", () => selectDate(d));
     }
@@ -444,9 +736,29 @@ function selectDate(date) {
   hideError("date");
   renderCalendar();
   renderTimeSlots();
+  // El corte a domicilio cambia de precio si la fecha es domingo.
+  updateChosenService();
+  syncExtrasPanel();
   updatePreview();
   // Al cambiar la fecha se pierde el horario: volver al paso 2.
   if (state.step === 3) setStep(2);
+}
+
+// Franjas y duración del turno, visibles junto a los horarios.
+function syncTimesSchedule() {
+  const schedule = modeSchedule();
+  $("times-duration").textContent = `Turnos de ${schedule.stepMin} minutos.`;
+  const node = $("times-schedule");
+  if (!state.service || isMembership()) {
+    node.hidden = true;
+    node.textContent = "";
+    return;
+  }
+  const ranges = schedule.windows
+    .map((w) => `de ${w.start} a ${w.end}`)
+    .join(" y ");
+  node.textContent = `${schedule.label}: ${ranges}.`;
+  node.hidden = false;
 }
 
 function renderTimeSlots() {
@@ -454,6 +766,7 @@ function renderTimeSlots() {
   const empty = $("times-empty");
   const heading = $("times-heading");
   wrap.innerHTML = "";
+  syncTimesSchedule();
 
   if (!state.date) {
     heading.textContent = "Elegí un día para ver los horarios.";
@@ -497,18 +810,32 @@ function selectTime(slot, btn) {
 /* Paso 3 — datos y WhatsApp */
 
 function updatePreview() {
-  $("preview-service").textContent = state.service ? state.service.name : "—";
-  $("preview-price").textContent = state.service ? state.service.price : "—";
+  $("preview-service").textContent = state.service ? serviceName() : "—";
+  $("preview-price").textContent = state.service
+    ? formatPrice(serviceAmount())
+    : "—";
+  if (isMembership()) {
+    $("preview-date").textContent = "A coordinar por WhatsApp";
+    $("preview-time").textContent = "A coordinar por WhatsApp";
+    return;
+  }
   $("preview-date").textContent = state.date ? formatLong(state.date) : "—";
-  $("preview-time").textContent = state.time ? `${state.time} (hora de Argentina)` : "—";
+  $("preview-time").textContent = state.time
+    ? `${state.time} (hora de Argentina)`
+    : "—";
+}
+
+function fieldTarget(field) {
+  if (field === "time") return $("time-slots");
+  if (field === "date") return $("date-input");
+  return $(field);
 }
 
 function showError(field, message) {
   const error = $(`error-${field}`);
   error.textContent = message;
   error.hidden = false;
-  const input = $(field === "time" ? "time-slots" : field);
-  if (input) input.setAttribute("aria-invalid", "true");
+  fieldTarget(field)?.setAttribute("aria-invalid", "true");
 }
 
 function hideError(field) {
@@ -516,8 +843,7 @@ function hideError(field) {
   if (!error) return;
   error.hidden = true;
   error.textContent = "";
-  const input = $(field === "time" ? "time-slots" : field);
-  if (input) input.removeAttribute("aria-invalid");
+  fieldTarget(field)?.removeAttribute("aria-invalid");
 }
 
 function validateDetails() {
@@ -538,11 +864,21 @@ function validateDetails() {
       ok = false;
     }
   }
-  if (!state.service || !state.date || !state.time) {
-    $("form-status").textContent = "Faltan datos del turno. Volvé a los pasos anteriores.";
+  const missing = "Faltan datos del turno. Volvé a los pasos anteriores.";
+  if (!state.service) {
+    $("form-status").textContent = missing;
+    ok = false;
+  } else if (isMembership()) {
+    // La membresía no tiene fecha fija: se coordina por WhatsApp.
+  } else if (!state.date || !state.time) {
+    $("form-status").textContent = missing;
     ok = false;
   } else if (!isDateAllowed(state.date)) {
     $("form-status").textContent = "La fecha elegida ya no está disponible. Elegí otra.";
+    ok = false;
+  } else if (localClosedOnSundays() && isSunday(state.date)) {
+    $("form-status").textContent =
+      "Los domingos la peluquería está cerrada. Elegí otro día o el corte a domicilio.";
     ok = false;
   } else {
     const slots = slotsForDate(state.date);
@@ -560,13 +896,22 @@ function validateDetails() {
 }
 
 function buildMessage() {
-  const lines = [
-    `Hola JC BARBER, quiero solicitar un turno.`,
-    `Servicio: ${state.service.name} (${state.service.place}) — ${state.service.price}, ${state.service.duration}.`,
-    `Fecha preferida: ${formatShort(state.date)}`,
-    `Hora preferida: ${state.time} (hora de Argentina)`,
-    `Nombre: ${$("name").value.trim()}`,
-  ];
+  const details = [
+    `Servicio: ${serviceName()} (${state.service.place}) — ${formatPrice(
+      serviceAmount(),
+    )}`,
+    serviceDuration(),
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const lines = [`Hola JC BARBER, quiero solicitar un turno.`, `${details}.`];
+  if (isMembership()) {
+    lines.push(`Fecha y hora: a coordinar por WhatsApp`);
+  } else {
+    lines.push(`Fecha preferida: ${formatShort(state.date)}`);
+    lines.push(`Hora preferida: ${state.time} (hora de Argentina)`);
+  }
+  lines.push(`Nombre: ${$("name").value.trim()}`);
   if (state.service.mode === "home") {
     lines.push(`Domicilio: ${$("address").value.trim()}`);
   }
@@ -592,10 +937,22 @@ $("booking-form").addEventListener("submit", (event) => {
 /* init */
 
 renderServices();
+renderExtras();
 renderCalendar();
 renderTimeSlots();
+syncSundayNote();
+syncExtrasPanel();
 updatePreview();
 setStep(1, { focus: false });
+
+// El corte general espera en el paso 1 a que se elijan (o no) los extras.
+$("service-continue").addEventListener("click", () => {
+  if (state.date && state.time) setStep(3);
+  else setStep(2);
+});
+
+// La membresía omite el calendario y va directo al paso 3.
+$("membership-continue").addEventListener("click", () => setStep(3));
 
 $("calendar-prev").addEventListener("click", () => {
   calendarState.view = addMonths(calendarState.view, -1);
@@ -614,6 +971,13 @@ $("date-input").addEventListener("change", () => {
   }
   if (!isDateAllowed(d)) {
     showError("date", `Elegí una fecha entre hoy y ${formatLong(addDays(argentinaToday(), config.horizonDays))}.`);
+    return;
+  }
+  if (localClosedOnSundays() && isSunday(d)) {
+    showError(
+      "date",
+      "Los domingos la peluquería está cerrada. Elegí otro día o, para el domingo, el corte a domicilio.",
+    );
     return;
   }
   hideError("date");
