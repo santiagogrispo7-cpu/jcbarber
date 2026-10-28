@@ -4,8 +4,7 @@ const config = {
   whatsappDisplay: "+54 9 3329 60-6138",
   whatsappNumber: "5493329606138",
   instagramUrl: "https://www.instagram.com/jc_barberhouse/",
-  tiktokUrl:
-    "https://www.tiktok.com/@jcbarberhouse?_r=1&_t=ZS-9AfYPGAygh0",
+  tiktokUrl: "https://www.tiktok.com/@jcbarberhouse?_r=1&_t=ZS-9AfYPGAygh0",
   addressText: "AVENIDA SAN MARTIN 743",
   addressCity: "Baradero",
   timeZone: "America/Argentina/Buenos_Aires",
@@ -75,6 +74,49 @@ const EXTRAS = [
     durationMin: 30,
   },
 ];
+
+const CATALOG_KEY = "jcbarber.panel.catalog.v1";
+
+const isValidAmount = (value) =>
+  typeof value === "number" && Number.isFinite(value) && value >= 0;
+
+// El panel guarda el catálogo editable en este mismo origen. Si existe, sus
+// importes mandan sobre los valores por defecto del sitio público.
+function applyCatalogPrices() {
+  try {
+    const raw = localStorage.getItem(CATALOG_KEY);
+    if (!raw) return;
+    const catalog = JSON.parse(raw);
+    const servicesById = new Map(
+      (Array.isArray(catalog.services) ? catalog.services : []).map(
+        (service) => [service.id, service],
+      ),
+    );
+    const extrasById = new Map(
+      (Array.isArray(catalog.extras) ? catalog.extras : []).map((extra) => [
+        extra.id,
+        extra,
+      ]),
+    );
+
+    SERVICES.forEach((service) => {
+      const stored = servicesById.get(service.id);
+      if (!stored) return;
+      if (isValidAmount(stored.amount)) service.amount = stored.amount;
+      if (service.sundayAmount != null && isValidAmount(stored.sundayAmount)) {
+        service.sundayAmount = stored.sundayAmount;
+      }
+    });
+    EXTRAS.forEach((extra) => {
+      const stored = extrasById.get(extra.id);
+      if (stored && isValidAmount(stored.amount)) extra.amount = stored.amount;
+    });
+  } catch {
+    // localStorage bloqueado o catálogo corrupto: se usan los valores base.
+  }
+}
+
+applyCatalogPrices();
 
 const formatPrice = (amount) => `$${amount.toLocaleString("es-AR")}`;
 
@@ -229,7 +271,9 @@ if (slideshow) {
 const pad = (n) => String(n).padStart(2, "0");
 
 function argentinaNow() {
-  return new Date(new Date().toLocaleString("en-US", { timeZone: config.timeZone }));
+  return new Date(
+    new Date().toLocaleString("en-US", { timeZone: config.timeZone }),
+  );
 }
 function argentinaToday() {
   const d = argentinaNow();
@@ -334,7 +378,13 @@ function slotsForDate(date) {
   return all.filter((slot) => {
     if (!isToday) return true;
     const [h, m] = slot.split(":").map(Number);
-    const when = new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, m);
+    const when = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      h,
+      m,
+    );
     return when > now;
   });
 }
@@ -470,6 +520,8 @@ function serviceCard(service) {
   input.name = "service";
   input.value = service.id;
   input.className = "sr-only";
+  input.checked = state.service?.id === service.id;
+  card.classList.toggle("is-selected", input.checked);
 
   const check = document.createElement("span");
   check.className = "service-card-check";
@@ -556,6 +608,7 @@ function renderExtras() {
     input.name = "extras";
     input.value = extra.id;
     input.className = "sr-only";
+    input.checked = state.extras.includes(extra.id);
 
     const name = document.createElement("span");
     name.className = "extra-chip-name";
@@ -724,9 +777,11 @@ function renderCalendar() {
   }
 
   const prevMonth = new Date(year, month, 1);
-  $("calendar-prev").disabled = prevMonth <= new Date(today.getFullYear(), today.getMonth(), 1);
+  $("calendar-prev").disabled =
+    prevMonth <= new Date(today.getFullYear(), today.getMonth(), 1);
   const nextMonth = new Date(year, month + 1, 1);
-  $("calendar-next").disabled = nextMonth > new Date(max.getFullYear(), max.getMonth(), 1);
+  $("calendar-next").disabled =
+    nextMonth > new Date(max.getFullYear(), max.getMonth(), 1);
 }
 
 function selectDate(date) {
@@ -797,11 +852,13 @@ function renderTimeSlots() {
 
 function selectTime(slot, btn) {
   state.time = slot;
-  $("time-slots").querySelectorAll(".time-slot").forEach((b) => {
-    const on = b === btn;
-    b.classList.toggle("is-selected", on);
-    b.setAttribute("aria-pressed", on ? "true" : "false");
-  });
+  $("time-slots")
+    .querySelectorAll(".time-slot")
+    .forEach((b) => {
+      const on = b === btn;
+      b.classList.toggle("is-selected", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
   hideError("time");
   updatePreview();
   setStep(3);
@@ -860,7 +917,10 @@ function validateDetails() {
   if (state.service?.mode === "home") {
     const address = $("address").value.trim();
     if (address.length < 5 || address.length > 180) {
-      showError("address", "Escribí la dirección del domicilio (mínimo 5 caracteres).");
+      showError(
+        "address",
+        "Escribí la dirección del domicilio (mínimo 5 caracteres).",
+      );
       ok = false;
     }
   }
@@ -874,7 +934,8 @@ function validateDetails() {
     $("form-status").textContent = missing;
     ok = false;
   } else if (!isDateAllowed(state.date)) {
-    $("form-status").textContent = "La fecha elegida ya no está disponible. Elegí otra.";
+    $("form-status").textContent =
+      "La fecha elegida ya no está disponible. Elegí otra.";
     ok = false;
   } else if (localClosedOnSundays() && isSunday(state.date)) {
     $("form-status").textContent =
@@ -883,7 +944,8 @@ function validateDetails() {
   } else {
     const slots = slotsForDate(state.date);
     if (!slots.includes(state.time)) {
-      $("form-status").textContent = "Ese horario ya no está disponible. Elegí otro.";
+      $("form-status").textContent =
+        "Ese horario ya no está disponible. Elegí otro.";
       ok = false;
     }
   }
@@ -896,20 +958,15 @@ function validateDetails() {
 }
 
 function buildMessage() {
-  const details = [
-    `Servicio: ${serviceName()} (${state.service.place}) — ${formatPrice(
-      serviceAmount(),
-    )}`,
-    serviceDuration(),
-  ]
-    .filter(Boolean)
-    .join(", ");
-  const lines = [`Hola JC BARBER, quiero solicitar un turno.`, `${details}.`];
+  const lines = [
+    `Hola JC BARBER, quiero solicitar un turno.`,
+    `Servicio: ${serviceName()} (${state.service.place}).`,
+  ];
   if (isMembership()) {
     lines.push(`Fecha y hora: a coordinar por WhatsApp`);
   } else {
     lines.push(`Fecha preferida: ${formatShort(state.date)}`);
-    lines.push(`Hora preferida: ${state.time} (hora de Argentina)`);
+    lines.push(`Hora preferida: ${state.time}`);
   }
   lines.push(`Nombre: ${$("name").value.trim()}`);
   if (state.service.mode === "home") {
@@ -945,6 +1002,41 @@ syncExtrasPanel();
 updatePreview();
 setStep(1, { focus: false });
 
+// Si el panel abierto en otra pestaña modifica precios, esta página se
+// actualiza sin recargar y conserva el servicio/fecha ya elegidos.
+function refreshCatalogUI() {
+  applyCatalogPrices();
+  renderServices();
+  renderExtras();
+  syncExtrasPanel();
+  updateChosenService();
+  updatePreview();
+}
+
+function catalogRaw() {
+  try {
+    return localStorage.getItem(CATALOG_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+let lastCatalogRaw = catalogRaw();
+function refreshCatalogFromStorage() {
+  const raw = catalogRaw();
+  if (raw === lastCatalogRaw) return;
+  lastCatalogRaw = raw;
+  refreshCatalogUI();
+}
+
+window.addEventListener("storage", (event) => {
+  if (event.key === CATALOG_KEY) refreshCatalogFromStorage();
+});
+window.addEventListener("focus", refreshCatalogFromStorage);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) refreshCatalogFromStorage();
+});
+
 // El corte general espera en el paso 1 a que se elijan (o no) los extras.
 $("service-continue").addEventListener("click", () => {
   if (state.date && state.time) setStep(3);
@@ -970,7 +1062,10 @@ $("date-input").addEventListener("change", () => {
     return;
   }
   if (!isDateAllowed(d)) {
-    showError("date", `Elegí una fecha entre hoy y ${formatLong(addDays(argentinaToday(), config.horizonDays))}.`);
+    showError(
+      "date",
+      `Elegí una fecha entre hoy y ${formatLong(addDays(argentinaToday(), config.horizonDays))}.`,
+    );
     return;
   }
   if (localClosedOnSundays() && isSunday(d)) {

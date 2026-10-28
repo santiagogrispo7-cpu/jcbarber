@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#18334c" />
+    <title>Panel de administración · JC Barberhouse</title>
+    <meta
+      name="description"
+      content="Agenda local de JC Barberhouse: cargá y organizá los turnos que llegan por WhatsApp."
+    />
+    <meta name="robots" content="noindex, nofollow" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="data:image/png;base64,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"
+    />
+    <link rel="stylesheet" href="./admin.css" />
+    <script type="module" src="./admin.js"></script>
+  </head>
+  <body class="admin-page">
+    <a class="admin-skip" href="#panel">Saltar al contenido</a>
+
+    <svg
+      class="admin-icon-library"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <symbol id="a-calendar" viewBox="0 0 24 24">
+        <path
+          d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"
+        />
+        <path d="M16 3v4" />
+        <path d="M8 3v4" />
+        <path d="M4 11h16" />
+        <path d="M8 15h2v2h-2z" />
+      </symbol>
+      <symbol id="a-clock" viewBox="0 0 24 24">
+        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+        <path d="M12 7v5l3 3" />
+      </symbol>
+      <symbol id="a-home" viewBox="0 0 24 24">
+        <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+        <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+      </symbol>
+      <symbol id="a-pin" viewBox="0 0 24 24">
+        <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+        <path
+          d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"
+        />
+      </symbol>
+      <symbol id="a-whatsapp" viewBox="0 0 24 24">
+        <path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" />
+        <path
+          d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1"
+        />
+      </symbol>
+      <symbol id="a-check" viewBox="0 0 24 24">
+        <path d="M5 12l5 5l10 -10" />
+      </symbol>
+      <symbol id="a-x" viewBox="0 0 24 24">
+        <path d="M18 6l-12 12" />
+        <path d="M6 6l12 12" />
+      </symbol>
+      <symbol id="a-plus" viewBox="0 0 24 24">
+        <path d="M12 5l0 14" />
+        <path d="M5 12l14 0" />
+      </symbol>
+      <symbol id="a-download" viewBox="0 0 24 24">
+        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+        <path d="M7 11l5 5l5 -5" />
+        <path d="M12 4l0 12" />
+      </symbol>
+      <symbol id="a-trash" viewBox="0 0 24 24">
+        <path d="M4 7h16" />
+        <path d="M10 11v6" />
+        <path d="M14 11v6" />
+        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+      </symbol>
+      <symbol id="a-arrow" viewBox="0 0 24 24">
+        <path d="M5 12l14 0" />
+        <path d="M13 18l6 -6" />
+        <path d="M13 6l6 6" />
+      </symbol>
+      <symbol id="a-external" viewBox="0 0 24 24">
+        <path
+          d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"
+        />
+        <path d="M11 13l9 -9" />
+        <path d="M15 4h5v5" />
+      </symbol>
+      <symbol id="a-scissors" viewBox="0 0 24 24">
+        <path d="M3 7a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+        <path d="M3 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+        <path d="M8.6 8.6l10.4 10.4" />
+        <path d="M8.6 15.4l10.4 -10.4" />
+      </symbol>
+      <symbol id="a-users" viewBox="0 0 24 24">
+        <path d="M9 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+        <path d="M3 21v-2a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v2" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+      </symbol>
+      <symbol id="a-star" viewBox="0 0 24 24">
+        <path
+          d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"
+        />
+      </symbol>
+      <symbol id="a-chart" viewBox="0 0 24 24">
+        <path d="M3 3v18h18" />
+        <path d="M7 14l4 -4l3 3l5 -6" />
+      </symbol>
+      <symbol id="a-coin" viewBox="0 0 24 24">
+        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+        <path
+          d="M14.8 9a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1"
+        />
+        <path d="M12 6v2m0 8v2" />
+      </symbol>
+      <symbol id="a-edit" viewBox="0 0 24 24">
+        <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+        <path
+          d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"
+        />
+      </symbol>
+      <symbol id="a-refresh" viewBox="0 0 24 24">
+        <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+      </symbol>
+    </svg>
+
+    <header class="admin-header">
+      <div class="admin-shell admin-header-inner">
+        <a
+          class="admin-brand"
+          href="./index.html"
+          aria-label="JC BARBER Panel, ir al sitio"
+        >
+          <img src="./logo.jpg" alt="JC BARBER" width="206" height="98" />
+          <span>Panel</span>
+        </a>
+        <div class="admin-actions">
+          <a class="admin-button" href="./index.html">
+            Ver sitio
+            <svg class="admin-icon" aria-hidden="true">
+              <use href="#a-external" />
+            </svg>
+          </a>
+          <a class="admin-button admin-button-primary" href="#nueva-reserva">
+            <svg class="admin-icon" aria-hidden="true">
+              <use href="#a-plus" />
+            </svg>
+            Nueva reserva
+          </a>
+        </div>
+      </div>
+      <div class="admin-shell">
+        <nav class="admin-nav" aria-label="Secciones del panel">
+          <a href="#resumen">Resumen</a>
+          <a href="#agenda">Agenda</a>
+          <a href="#estadisticas">Estadísticas</a>
+          <a href="#nueva-reserva">Nueva reserva</a>
+          <a href="#servicios">Precios</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="admin-shell" id="panel">
+      <section class="admin-intro" id="resumen" aria-labelledby="panel-title">
+        <p class="admin-eyebrow">Panel de administración · JC Barberhouse</p>
+        <h1 id="panel-title">Tu agenda,<br />en orden.</h1>
+        <p class="admin-lead">
+          Cargá los turnos que llegan por WhatsApp, ajustá precios, cancelá
+          horarios ocupados y revisá cuánto ganaste. Todo queda guardado en la
+          base de datos local del panel.
+        </p>
+        <p class="admin-local-note" id="storage-note">
+          <svg class="admin-icon" aria-hidden="true"><use href="#a-pin" /></svg>
+          <span
+            >Base de datos local (IndexedDB): los turnos, precios y estadísticas
+            se guardan en este navegador. Si borrás los datos del navegador, la
+            agenda se pierde.</span
+          >
+        </p>
+      </section>
+
+      <section class="admin-kpis" aria-label="Resumen de la agenda">
+        <article class="admin-kpi">
+          <p class="admin-kpi-label">Hoy</p>
+          <p class="admin-kpi-value" id="kpi-today">0</p>
+          <p class="admin-kpi-hint">turnos activos</p>
+        </article>
+        <article class="admin-kpi">
+          <p class="admin-kpi-label">Próximos 7 días</p>
+          <p class="admin-kpi-value" id="kpi-week">0</p>
+          <p class="admin-kpi-hint">turnos agendados</p>
+        </article>
+        <article class="admin-kpi">
+          <p class="admin-kpi-label">Pendientes</p>
+          <p class="admin-kpi-value" id="kpi-pending">0</p>
+          <p class="admin-kpi-hint">por confirmar</p>
+        </article>
+        <article class="admin-kpi">
+          <p class="admin-kpi-label">Ingresos del mes</p>
+          <p class="admin-kpi-value" id="kpi-revenue">$0</p>
+          <p class="admin-kpi-hint">turnos completados</p>
+        </article>
+        <article class="admin-kpi">
+          <p class="admin-kpi-label">Completados</p>
+          <p class="admin-kpi-value" id="kpi-completed">0</p>
+          <p class="admin-kpi-hint">turnos realizados</p>
+        </article>
+        <article class="admin-kpi admin-kpi-wide">
+          <p class="admin-kpi-label">Próximo turno</p>
+          <p class="admin-kpi-value admin-kpi-next" id="kpi-next">Sin turnos</p>
+          <p class="admin-kpi-hint" id="kpi-next-detail">
+            Cargá una reserva para empezar.
+          </p>
+        </article>
+      </section>
+
+      <section class="admin-section" id="agenda" aria-labelledby="agenda-title">
+        <div class="admin-section-head">
+          <div>
+            <p class="admin-eyebrow">Movimiento</p>
+            <h2 id="agenda-title">Agenda</h2>
+          </div>
+          <button class="admin-button" type="button" id="export-csv">
+            <svg class="admin-icon" aria-hidden="true">
+              <use href="#a-download" />
+            </svg>
+            Exportar CSV
+          </button>
+        </div>
+
+        <div class="admin-filters" role="search" aria-label="Filtrar reservas">
+          <div class="admin-field">
+            <label for="filter-date">Fecha</label>
+            <input type="date" id="filter-date" />
+          </div>
+          <div class="admin-field">
+            <label for="filter-status">Estado</label>
+            <select id="filter-status">
+              <option value="all">Todos</option>
+              <option value="pending">Pendiente</option>
+              <option value="confirmed">Confirmado</option>
+              <option value="completed">Completado</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+          </div>
+          <div class="admin-field admin-field-grow">
+            <label for="filter-query">Buscar</label>
+            <input
+              type="search"
+              id="filter-query"
+              placeholder="Nombre, dirección o teléfono"
+              autocomplete="off"
+            />
+          </div>
+          <button class="admin-button" type="button" id="clear-filters">
+            Limpiar
+          </button>
+        </div>
+
+        <p
+          class="admin-section-note"
+          id="agenda-summary"
+          role="status"
+          aria-live="polite"
+        ></p>
+        <div class="booking-list" id="booking-list"></div>
+        <div class="admin-empty" id="agenda-empty" hidden>
+          <svg class="admin-icon admin-empty-icon" aria-hidden="true">
+            <use href="#a-calendar" />
+          </svg>
+          <h3>No hay reservas para mostrar</h3>
+          <p id="agenda-empty-text">
+            Cuando cargues un turno o cambies los filtros, va a aparecer acá.
+          </p>
+          <a class="admin-button admin-button-primary" href="#nueva-reserva">
+            <svg class="admin-icon" aria-hidden="true">
+              <use href="#a-plus" />
+            </svg>
+            Cargar una reserva
+          </a>
+        </div>
+      </section>
+
+      <section
+        class="admin-section"
+        id="estadisticas"
+        aria-labelledby="estadisticas-title"
+      >
+        <div class="admin-section-head">
+          <div>
+            <p class="admin-eyebrow">Números del negocio</p>
+            <h2 id="estadisticas-title">Estadísticas</h2>
+            <p>
+              Todos los turnos, la ganancia cobrada y lo que queda pendiente de
+              cobro. Los importes usan el precio guardado en cada reserva.
+            </p>
+          </div>
+          <div class="admin-field admin-stats-period">
+            <label for="stats-period">Período</label>
+            <select id="stats-period">
+              <option value="month">Este mes</option>
+              <option value="30d">Últimos 30 días</option>
+              <option value="year">Este año</option>
+              <option value="all">Todo el historial</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="admin-stats-grid" id="stats-cards">
+          <article class="admin-stat">
+            <p class="admin-stat-label">Turnos</p>
+            <p class="admin-stat-value" id="stats-total">0</p>
+            <p class="admin-stat-hint" id="stats-total-hint">en el período</p>
+          </article>
+          <article class="admin-stat is-green">
+            <p class="admin-stat-label">Cobrado</p>
+            <p class="admin-stat-value" id="stats-collected">$0</p>
+            <p class="admin-stat-hint" id="stats-completed">0 completados</p>
+          </article>
+          <article class="admin-stat is-gold">
+            <p class="admin-stat-label">Por cobrar</p>
+            <p class="admin-stat-value" id="stats-projected">$0</p>
+            <p class="admin-stat-hint" id="stats-active">0 activos</p>
+          </article>
+          <article class="admin-stat is-red">
+            <p class="admin-stat-label">Perdido</p>
+            <p class="admin-stat-value" id="stats-lost">$0</p>
+            <p class="admin-stat-hint" id="stats-cancelled">0 cancelados</p>
+          </article>
+          <article class="admin-stat">
+            <p class="admin-stat-label">Ticket promedio</p>
+            <p class="admin-stat-value" id="stats-average">$0</p>
+            <p class="admin-stat-hint">por turno completado</p>
+          </article>
+          <article class="admin-stat">
+            <p class="admin-stat-label">Base de datos</p>
+            <p class="admin-stat-value admin-stat-text" id="stats-storage">
+              IndexedDB
+            </p>
+            <p class="admin-stat-hint" id="stats-updated">Sin cambios</p>
+          </article>
+        </div>
+
+        <div class="admin-stats-panels">
+          <article class="admin-stats-panel">
+            <h3>Por servicio</h3>
+            <div class="admin-breakdown" id="stats-services"></div>
+          </article>
+          <article class="admin-stats-panel">
+            <h3>Por modalidad</h3>
+            <div class="admin-breakdown" id="stats-modes"></div>
+          </article>
+        </div>
+
+        <article class="admin-stats-panel admin-stats-months">
+          <h3>Ingresos cobrados por mes</h3>
+          <div class="admin-months" id="stats-months"></div>
+        </article>
+      </section>
+
+      <section
+        class="admin-section"
+        id="nueva-reserva"
+        aria-labelledby="nueva-title"
+      >
+        <div class="admin-section-head">
+          <div>
+            <p class="admin-eyebrow">Carga manual</p>
+            <h2 id="nueva-title">Nueva reserva</h2>
+            <p>
+              Copiá el pedido de WhatsApp. La membresía se agenda por separado:
+              no pide fecha ni horario.
+            </p>
+          </div>
+        </div>
+
+        <form class="admin-form" id="booking-form" novalidate>
+          <div class="admin-form-grid">
+            <div class="admin-field">
+              <label for="client-name">Nombre y apellido</label>
+              <input
+                type="text"
+                id="client-name"
+                name="name"
+                autocomplete="name"
+                maxlength="80"
+                placeholder="Ej: Juan Pérez"
+                required
+              />
+            </div>
+            <div class="admin-field">
+              <label for="client-phone"
+                >WhatsApp <span class="admin-optional">(opcional)</span></label
+              >
+              <input
+                type="tel"
+                id="client-phone"
+                name="phone"
+                autocomplete="tel"
+                maxlength="30"
+                placeholder="Ej: 3329 60-6138"
+              />
+            </div>
+            <div class="admin-field admin-field-wide">
+              <label for="client-service">Servicio</label>
+              <select id="client-service" name="service" required></select>
+            </div>
+            <div class="admin-field" id="date-field">
+              <label for="client-date">Fecha</label>
+              <input type="date" id="client-date" name="date" />
+            </div>
+            <div class="admin-field" id="time-field">
+              <label for="client-time">Horario</label>
+              <select id="client-time" name="time"></select>
+              <p class="admin-hint" id="time-hint"></p>
+            </div>
+            <div class="admin-field admin-field-wide" id="address-field" hidden>
+              <label for="client-address">Dirección del domicilio</label>
+              <input
+                type="text"
+                id="client-address"
+                name="address"
+                autocomplete="street-address"
+                maxlength="180"
+                placeholder="Ej: Rivadavia 123, Baradero"
+              />
+            </div>
+            <div class="admin-field">
+              <label for="client-status">Estado inicial</label>
+              <select id="client-status" name="status">
+                <option value="pending">Pendiente</option>
+                <option value="confirmed">Confirmado</option>
+              </select>
+            </div>
+            <div class="admin-field admin-field-wide">
+              <label for="client-notes"
+                >Notas <span class="admin-optional">(opcional)</span></label
+              >
+              <textarea
+                id="client-notes"
+                name="notes"
+                rows="2"
+                maxlength="400"
+                placeholder="Ej: prefiere el primer turno de la tarde"
+              ></textarea>
+            </div>
+          </div>
+          <div class="admin-form-actions">
+            <button class="admin-button admin-button-primary" type="submit">
+              <svg class="admin-icon" aria-hidden="true">
+                <use href="#a-plus" />
+              </svg>
+              Agregar a la agenda
+            </button>
+            <button class="admin-button" type="reset">
+              Limpiar formulario
+            </button>
+          </div>
+          <p
+            class="admin-feedback"
+            id="form-feedback"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </form>
+      </section>
+
+      <section
+        class="admin-section"
+        id="servicios"
+        aria-labelledby="servicios-title"
+      >
+        <div class="admin-section-head">
+          <div>
+            <p class="admin-eyebrow">Catálogo editable</p>
+            <h2 id="servicios-title">Precios de los servicios</h2>
+            <p>
+              Cambiá los importes cuando lo necesites. Al guardar, el sitio
+              público abierto en este navegador se actualiza solo. Las reservas
+              nuevas toman el precio actual; las anteriores conservan el precio
+              con el que se cargaron.
+            </p>
+          </div>
+        </div>
+        <form class="admin-form admin-price-form" id="prices-form" novalidate>
+          <div class="admin-service-grid" id="service-cards"></div>
+          <div class="admin-form-actions">
+            <button class="admin-button admin-button-primary" type="submit">
+              <svg class="admin-icon" aria-hidden="true">
+                <use href="#a-check" />
+              </svg>
+              Guardar precios
+            </button>
+            <button class="admin-button" type="button" id="reset-prices">
+              <svg class="admin-icon" aria-hidden="true">
+                <use href="#a-refresh" />
+              </svg>
+              Restaurar sugeridos
+            </button>
+          </div>
+          <p
+            class="admin-feedback"
+            id="prices-feedback"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </form>
+      </section>
+    </main>
+
+    <dialog
+      class="admin-dialog"
+      id="cancel-dialog"
+      aria-labelledby="cancel-title"
+    >
+      <form method="dialog" id="cancel-form">
+        <h2 id="cancel-title">Cancelar turno</h2>
+        <p class="admin-dialog-text" id="cancel-summary"></p>
+        <div class="admin-field">
+          <label for="cancel-reason"
+            >Motivo <span class="admin-optional">(opcional)</span></label
+          >
+          <textarea
+            id="cancel-reason"
+            name="reason"
+            rows="3"
+            maxlength="200"
+            placeholder="Ej: el cliente avisó que no puede asistir"
+          ></textarea>
+        </div>
+        <div class="admin-dialog-actions">
+          <button class="admin-button" value="back" formnovalidate>
+            Volver
+          </button>
+          <button
+            class="admin-button admin-button-primary"
+            value="confirm"
+            id="confirm-cancel"
+          >
+            <svg class="admin-icon" aria-hidden="true">
+              <use href="#a-x" />
+            </svg>
+            Cancelar turno
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <footer class="admin-footer">
+      <div class="admin-shell admin-footer-inner">
+        <p>JC Barberhouse · Av. San Martín 743, Baradero</p>
+        <p><a href="./index.html">Volver al sitio</a></p>
+      </div>
+    </footer>
+
+    <template id="booking-template">
+      <article class="booking-card">
+        <div class="booking-date">
+          <span class="booking-weekday"></span>
+          <strong class="booking-day"></strong>
+          <span class="booking-month"></span>
+        </div>
+        <div class="booking-body">
+          <div class="booking-top">
+            <h3 class="booking-name"></h3>
+            <span class="booking-status"></span>
+          </div>
+          <p class="booking-service"></p>
+          <dl class="booking-meta"></dl>
+          <p class="booking-notes" hidden></p>
+          <div class="booking-actions"></div>
+        </div>
+      </article>
+    </template>
+  </body>
+</html>
