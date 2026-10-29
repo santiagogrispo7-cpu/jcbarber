@@ -27,7 +27,11 @@ export default defineConfig(({ mode }) => {
     base: "./",
     build: {
       rolldownOptions: {
-        input: { main: "index.html", panel: "panel-admin.html" },
+        input: {
+          main: "index.html",
+          admin: "admin/index.html",
+          panel: "panel-admin.html",
+        },
       },
     },
     server: { host: "127.0.0.1" },

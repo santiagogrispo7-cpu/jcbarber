@@ -13,6 +13,8 @@ try {
     './booking.sql',
     '../migrations/202610210001_customer_services.sql',
     './customer-services.sql',
+    '../migrations/202610220001_home_service_price.sql',
+    '../migrations/202610290001_panel_integration.sql',
   ]) {
     await db.exec(await readFile(new URL(path, import.meta.url), 'utf8'));
     console.log(`PASS ${path}`);

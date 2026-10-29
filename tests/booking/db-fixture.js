@@ -14,6 +14,15 @@ const rpcDefinitions = new Map([
     keys: [],
     sql: "select public.public_catalog() as result",
   }],
+  ["public_site_catalog", {
+    keys: [],
+    sql: "select public.public_site_catalog() as result",
+  }],
+  ["public_blocked_ranges", {
+    keys: ["p_from", "p_to"],
+    sql: `select coalesce(jsonb_agg(to_jsonb(block) order by block.starts_at), '[]'::jsonb) as result
+      from public.public_blocked_ranges($1::date, $2::date) block`,
+  }],
   ["available_slots", {
     keys: ["p_service", "p_mode", "p_date"],
     // Let PostgreSQL encode timestamps/numeric like PostgREST, rather than
@@ -45,6 +54,10 @@ const rpcDefinitions = new Map([
     keys: ["p_data"],
     sql: "select public.admin_confirm_handover($1::jsonb) as result",
   }],
+  ["admin_save_site_catalog", {
+    keys: ["p_data"],
+    sql: "select public.admin_save_site_catalog($1::jsonb) as result",
+  }],
 ]);
 
 const errorMessages = new Map([
@@ -75,6 +88,9 @@ export const test = base.extend({
       await db.exec(await readFile(new URL("../../supabase/tests/bootstrap-local.sql", import.meta.url), "utf8"));
       await db.exec(await readFile(new URL("../../supabase/migrations/202610190001_booking_backend.sql", import.meta.url), "utf8"));
       await db.exec(await readFile(new URL("../../supabase/migrations/202610200001_admin_handover.sql", import.meta.url), "utf8"));
+      await db.exec(await readFile(new URL("../../supabase/migrations/202610210001_customer_services.sql", import.meta.url), "utf8"));
+      await db.exec(await readFile(new URL("../../supabase/migrations/202610220001_home_service_price.sql", import.meta.url), "utf8"));
+      await db.exec(await readFile(new URL("../../supabase/migrations/202610290001_panel_integration.sql", import.meta.url), "utf8"));
       await use(db);
     } finally {
       await db.close();

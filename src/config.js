@@ -1,0 +1,15 @@
+export const config = Object.freeze({
+  brandName: "JC Barberhouse",
+  whatsappDisplay: "+54 9 3329 60-6138",
+  whatsappNumber: "5493329606138",
+  instagramHandle: "jc_barberhouse",
+  instagramUrl: "https://www.instagram.com/jc_barberhouse/",
+  tiktokHandle: "jcbarberhouse",
+  tiktokUrl: "https://www.tiktok.com/@jcbarberhouse?_r=1&_t=ZS-9AfYPGAygh0",
+  addressText: "AVENIDA SAN MARTIN 743",
+  addressCity: "Baradero",
+  timeZone: "America/Argentina/Buenos_Aires",
+  locale: "es-AR",
+  bookingHorizonDays: 90,
+  service: "Corte de pelo a domicilio",
+});

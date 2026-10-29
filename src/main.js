@@ -1,4 +1,10 @@
 /* JC BARBER — lógica de la página y reserva en 3 pasos (archivo único). */
+import {
+  fetchAvailability,
+  fetchBlockedRanges,
+  fetchSiteCatalog,
+  isConfigured,
+} from "./site-api.js";
 
 const config = {
   whatsappDisplay: "+54 9 3329 60-6138",
@@ -76,13 +82,27 @@ const EXTRAS = [
 ];
 
 const CATALOG_KEY = "jcbarber.panel.catalog.v1";
+const BLOCKS_KEY = "jcbarber.panel.blocks.v1";
+let panelBlocks = [];
+
+const remote = {
+  configured: isConfigured,
+  ready: false,
+  enabled: false,
+  services: new Map(),
+  slots: new Map(),
+  errors: new Map(),
+  loading: new Set(),
+  generation: 0,
+};
 
 const isValidAmount = (value) =>
   typeof value === "number" && Number.isFinite(value) && value >= 0;
 
-// El panel guarda el catálogo editable en este mismo origen. Si existe, sus
-// importes mandan sobre los valores por defecto del sitio público.
+// Respaldo local: sólo se usa si Supabase no está disponible. Cuando el
+// catálogo remoto carga, sus precios son la única fuente de verdad.
 function applyCatalogPrices() {
+  if (remote.ready) return;
   try {
     const raw = localStorage.getItem(CATALOG_KEY);
     if (!raw) return;
@@ -117,6 +137,252 @@ function applyCatalogPrices() {
 }
 
 applyCatalogPrices();
+
+// Bloqueos cargados desde el panel: el peluquero puede cerrar un día completo
+// o un horario puntual. Se leen antes de dibujar calendario y horarios.
+function applyPanelBlocks() {
+  try {
+    const raw = localStorage.getItem(BLOCKS_KEY);
+    if (!raw) {
+      panelBlocks = [];
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    panelBlocks = (Array.isArray(parsed?.blocks) ? parsed.blocks : []).filter(
+      (block) =>
+        block &&
+        /^\d{4}-\d{2}-\d{2}$/.test(block.date || "") &&
+        ["all", "local", "home"].includes(block.mode) &&
+        (block.time === "" || /^\d{2}:\d{2}$/.test(block.time || "")),
+    );
+  } catch {
+    panelBlocks = [];
+  }
+}
+
+applyPanelBlocks();
+
+const normalizeName = (value) =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLocaleLowerCase("es-AR");
+
+function addDaysISO(iso, amount) {
+  const [year, month, day] = iso.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + amount, 12))
+    .toISOString()
+    .slice(0, 10);
+}
+
+function instantDate(instant) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: config.timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(instant));
+}
+
+function instantTime(instant) {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: config.timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(new Date(instant));
+}
+
+function minutesOf(time) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function applyRemoteCatalog(catalog) {
+  if (!catalog || typeof catalog !== "object") return;
+  remote.ready = true;
+  remote.enabled = Boolean(catalog.enabled);
+  const horizon = Number(catalog.horizon_days);
+  if (Number.isFinite(horizon) && horizon > 0) config.horizonDays = horizon;
+
+  const services = Array.isArray(catalog.services)
+    ? catalog.services
+    : [];
+  const byName = new Map(
+    services.map((service) => [normalizeName(service.name), service]),
+  );
+  remote.services.clear();
+
+  SERVICES.forEach((service) => {
+    const stored = byName.get(normalizeName(service.name));
+    if (!stored) return;
+    remote.services.set(service.id, stored.id);
+    if (isValidAmount(Number(stored.price))) {
+      service.amount = Number(stored.price);
+    }
+    if (stored.duration_minutes) {
+      service.durationMin = Number(stored.duration_minutes);
+    }
+  });
+  EXTRAS.forEach((extra) => {
+    const stored = byName.get(normalizeName(extra.name));
+    if (!stored) return;
+    remote.services.set(extra.id, stored.id);
+    if (isValidAmount(Number(stored.price))) {
+      extra.amount = Number(stored.price);
+    }
+    if (stored.duration_minutes) {
+      extra.durationMin = Number(stored.duration_minutes);
+    }
+  });
+
+  const memberships = Array.isArray(catalog.memberships)
+    ? catalog.memberships
+    : [];
+  const membershipById = new Map(
+    memberships.map((membership) => [membership.id, membership]),
+  );
+  SERVICES.filter((service) => service.type === "membership").forEach(
+    (service) => {
+      const stored = membershipById.get(service.id);
+      if (!stored) return;
+      if (isValidAmount(Number(stored.amount))) {
+        service.amount = Number(stored.amount);
+      }
+      if (stored.name) service.name = String(stored.name);
+    },
+  );
+
+  remote.slots.clear();
+  remote.errors.clear();
+  remote.loading.clear();
+  refreshCatalogUI();
+}
+
+function applyRemoteBlocks(ranges) {
+  if (!Array.isArray(ranges)) return;
+  const entries = [];
+  ranges.forEach((range) => {
+    if (!range?.starts_at || !range?.ends_at) return;
+    const startDate = instantDate(range.starts_at);
+    const endDate = instantDate(range.ends_at);
+    const startTime = instantTime(range.starts_at);
+    const endTime = instantTime(range.ends_at);
+    const fullDay =
+      startTime === "00:00" && endTime === "00:00" && endDate > startDate;
+    if (fullDay) {
+      for (let date = startDate; date < endDate; date = addDaysISO(date, 1)) {
+        entries.push({
+          date,
+          time: "",
+          mode: "all",
+          fullDay: true,
+          startMin: 0,
+          endMin: 24 * 60,
+          startsAt: range.starts_at,
+          endsAt: range.ends_at,
+        });
+      }
+      return;
+    }
+    entries.push({
+      date: startDate,
+      time: startTime,
+      mode: "all",
+      fullDay: false,
+      startMin: minutesOf(startTime),
+      endMin:
+        endDate > startDate ? 24 * 60 : Math.max(minutesOf(endTime), 1),
+      startsAt: range.starts_at,
+      endsAt: range.ends_at,
+    });
+  });
+  panelBlocks = entries;
+}
+
+function availabilityKey(date) {
+  if (!state.service) return "";
+  return `${state.service.id}|${state.service.mode}|${formatISO(date)}`;
+}
+
+async function loadRemoteAvailability(date) {
+  if (
+    !remote.configured ||
+    !remote.enabled ||
+    !state.service ||
+    isMembership()
+  ) {
+    return;
+  }
+  const serviceId = remote.services.get(state.service.id);
+  if (!serviceId) return;
+  const iso = formatISO(date);
+  const key = availabilityKey(date);
+  const generation = remote.generation;
+  remote.loading.add(key);
+  remote.errors.delete(key);
+  if (state.date && formatISO(state.date) === iso) {
+    renderTimeSlots();
+  }
+  try {
+    const slots = await fetchAvailability(serviceId, state.service.mode, iso);
+    if (generation !== remote.generation) return;
+    remote.slots.set(
+      key,
+      (Array.isArray(slots) ? slots : [])
+        .filter((slot) => slot?.starts_at)
+        .map((slot) => ({
+          time: instantTime(slot.starts_at),
+          startsAt: slot.starts_at,
+          endsAt: slot.ends_at,
+          price: slot.price,
+        })),
+    );
+  } catch {
+    if (generation !== remote.generation) return;
+    remote.slots.delete(key);
+    remote.errors.set(
+      key,
+      "No pudimos actualizar la disponibilidad. Probá de nuevo o confirmá por WhatsApp.",
+    );
+  } finally {
+    if (generation !== remote.generation) return;
+    remote.loading.delete(key);
+    if (state.date && formatISO(state.date) === iso) {
+      if (state.time && !slotsForDate(state.date).includes(state.time)) {
+        state.time = null;
+        if (state.step === 3) setStep(2);
+      }
+      renderCalendar();
+      renderTimeSlots();
+      updatePreview();
+    }
+  }
+}
+
+async function refreshRemoteData() {
+  if (!remote.configured) return;
+  const generation = ++remote.generation;
+  const today = formatISO(argentinaToday());
+  const results = await Promise.allSettled([
+    fetchSiteCatalog(),
+    fetchBlockedRanges(today, addDaysISO(today, 365)),
+  ]);
+  if (generation !== remote.generation) return;
+  if (results[0].status === "fulfilled") {
+    applyRemoteCatalog(results[0].value);
+  }
+  if (results[1].status === "fulfilled") {
+    applyRemoteBlocks(results[1].value);
+  }
+  renderCalendar();
+  renderTimeSlots();
+  updatePreview();
+  if (state.date && !isMembership()) {
+    await loadRemoteAvailability(state.date);
+  }
+}
 
 const formatPrice = (amount) => `$${amount.toLocaleString("es-AR")}`;
 
@@ -369,13 +635,53 @@ function generateSlots(win, stepMin) {
   return out;
 }
 
+function blockMatchesMode(block) {
+  const mode = state.service?.mode || "local";
+  return block.mode === "all" || block.mode === mode;
+}
+
+function dayBlocked(iso) {
+  return panelBlocks.some(
+    (block) =>
+      block.date === iso && block.time === "" && blockMatchesMode(block),
+  );
+}
+
+function slotBlocked(iso, slot) {
+  const minutes = minutesOf(slot);
+  return panelBlocks.some(
+    (block) =>
+      block.date === iso &&
+      blockMatchesMode(block) &&
+      (block.time === "" ||
+        block.time === slot ||
+        (block.startMin != null &&
+          minutes >= block.startMin &&
+          minutes < block.endMin)),
+  );
+}
+
 function slotsForDate(date) {
+  const key = availabilityKey(date);
+  if (
+    remote.configured &&
+    remote.enabled &&
+    remote.ready &&
+    remote.slots.has(key)
+  ) {
+    return remote.slots.get(key).map((slot) => slot.time);
+  }
+  if (remote.configured && remote.enabled && remote.errors.has(key)) {
+    return [];
+  }
   const today = argentinaToday();
   const now = argentinaNow();
   const isToday = sameDay(date, today);
+  const iso = formatISO(date);
   const { stepMin, windows } = modeSchedule();
   const all = windows.flatMap((w) => generateSlots(w, stepMin));
   return all.filter((slot) => {
+    if (dayBlocked(iso) || slotBlocked(iso, slot)) return false;
     if (!isToday) return true;
     const [h, m] = slot.split(":").map(Number);
     const when = new Date(
@@ -706,6 +1012,7 @@ function selectService(service) {
   renderCalendar();
   renderTimeSlots();
   updatePreview();
+  if (state.date && !membership) loadRemoteAvailability(state.date);
 
   // Elegir un servicio nunca salta de paso solo: el cliente avanza con su
   // botón "Continuar" (al paso 3 si ya quedaron fecha y horario).
@@ -751,9 +1058,11 @@ function renderCalendar() {
     btn.textContent = String(day);
     const inRange = isDateAllowed(d);
     const sundayClosed = closedSunday && d.getDay() === 0;
-    const allowed = inRange && !sundayClosed;
+    const blocked = dayBlocked(formatISO(d));
+    const allowed = inRange && !sundayClosed && !blocked;
     btn.disabled = !allowed;
     if (sundayClosed) btn.classList.add("is-closed-sunday");
+    if (blocked) btn.classList.add("is-blocked");
     if (sameDay(d, today)) {
       btn.classList.add("is-today");
       btn.setAttribute("aria-current", "date");
@@ -766,9 +1075,11 @@ function renderCalendar() {
     }
     const suffix = !inRange
       ? " (no disponible)"
-      : sundayClosed
-        ? " (la peluquería está cerrada los domingos)"
-        : "";
+      : blocked
+        ? " (bloqueado por la barbería)"
+        : sundayClosed
+          ? " (la peluquería está cerrada los domingos)"
+          : "";
     btn.setAttribute("aria-label", `${formatLong(d)}${suffix}`);
     if (allowed) {
       btn.addEventListener("click", () => selectDate(d));
@@ -795,6 +1106,7 @@ function selectDate(date) {
   updateChosenService();
   syncExtrasPanel();
   updatePreview();
+  if (!isMembership()) loadRemoteAvailability(date);
   // Al cambiar la fecha se pierde el horario: volver al paso 2.
   if (state.step === 3) setStep(2);
 }
@@ -816,6 +1128,9 @@ function syncTimesSchedule() {
   node.hidden = false;
 }
 
+const TIMES_EMPTY_COPY =
+  "No hay turnos disponibles para este día. Probá con otra fecha.";
+
 function renderTimeSlots() {
   const wrap = $("time-slots");
   const empty = $("times-empty");
@@ -830,6 +1145,25 @@ function renderTimeSlots() {
   }
 
   heading.textContent = `Horarios disponibles el ${formatLong(state.date)}`;
+  const key = availabilityKey(state.date);
+  if (
+    remote.configured &&
+    remote.enabled &&
+    remote.ready &&
+    remote.loading.has(key) &&
+    !remote.slots.has(key)
+  ) {
+    empty.textContent = "Cargando horarios disponibles…";
+    empty.hidden = false;
+    return;
+  }
+  if (remote.configured && remote.enabled && remote.errors.has(key)) {
+    empty.textContent = remote.errors.get(key);
+    empty.hidden = false;
+    return;
+  }
+
+  empty.textContent = TIMES_EMPTY_COPY;
   const slots = slotsForDate(state.date);
 
   if (slots.length === 0) {
@@ -1002,6 +1336,13 @@ syncExtrasPanel();
 updatePreview();
 setStep(1, { focus: false });
 
+if (remote.configured) {
+  refreshRemoteData();
+  window.setInterval(() => {
+    if (!document.hidden) refreshRemoteData();
+  }, 30000);
+}
+
 // Si el panel abierto en otra pestaña modifica precios, esta página se
 // actualiza sin recargar y conserva el servicio/fecha ya elegidos.
 function refreshCatalogUI() {
@@ -1023,18 +1364,52 @@ function catalogRaw() {
 
 let lastCatalogRaw = catalogRaw();
 function refreshCatalogFromStorage() {
+  if (remote.ready) return;
   const raw = catalogRaw();
   if (raw === lastCatalogRaw) return;
   lastCatalogRaw = raw;
   refreshCatalogUI();
 }
 
+function blocksRaw() {
+  try {
+    return localStorage.getItem(BLOCKS_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+let lastBlocksRaw = blocksRaw();
+function refreshBlocksFromStorage() {
+  if (remote.ready) return;
+  const raw = blocksRaw();
+  if (raw === lastBlocksRaw) return;
+  lastBlocksRaw = raw;
+  applyPanelBlocks();
+  if (state.date) {
+    const slots = slotsForDate(state.date);
+    if (!slots.includes(state.time)) state.time = null;
+  }
+  renderCalendar();
+  renderTimeSlots();
+  updatePreview();
+  if (!state.time && state.step === 3) setStep(2);
+}
+
 window.addEventListener("storage", (event) => {
   if (event.key === CATALOG_KEY) refreshCatalogFromStorage();
+  if (event.key === BLOCKS_KEY) refreshBlocksFromStorage();
 });
-window.addEventListener("focus", refreshCatalogFromStorage);
+window.addEventListener("focus", () => {
+  refreshCatalogFromStorage();
+  refreshBlocksFromStorage();
+  refreshRemoteData();
+});
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) refreshCatalogFromStorage();
+  if (document.hidden) return;
+  refreshCatalogFromStorage();
+  refreshBlocksFromStorage();
+  refreshRemoteData();
 });
 
 // El corte general espera en el paso 1 a que se elijan (o no) los extras.

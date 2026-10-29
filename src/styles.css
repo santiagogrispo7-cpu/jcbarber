@@ -908,6 +908,11 @@ h1 {
   background: #f1f3f5;
   text-decoration-color: #b6bec4;
 }
+.calendar-day.is-blocked:disabled {
+  background: #fbf2df;
+  color: #8a641f;
+  text-decoration-color: #d6bf8f;
+}
 .calendar-day.is-today {
   border-color: #68879d;
 }
