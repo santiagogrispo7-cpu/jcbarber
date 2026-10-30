@@ -1,11 +1,15 @@
 /* Panel /admin: Supabase Auth + RPC. No hay claves privadas ni datos locales. */
 import {
+  acceptAccountLink,
   configurationIssue,
   currentUserEmail,
   getSession,
   hasSession,
   isConfigured,
+  needsPasswordSetup,
+  requestPasswordReset,
   rpc,
+  setAccountPassword,
   signIn,
   signOut,
 } from "./src/supabase.js";
@@ -225,15 +229,94 @@ function icon(name) {
 
 function setLoginBusy(busy) {
   state.busy = busy;
-  $("login-form").setAttribute("aria-busy", String(busy));
-  for (const node of $("login-form").elements) {
-    node.disabled = busy || !isConfigured;
+  for (const id of ["login-form", "recovery-form", "password-form"]) {
+    $(id).setAttribute("aria-busy", String(busy));
+    for (const node of $(id).elements) {
+      node.disabled = busy || !isConfigured;
+    }
+  }
+  $("forgot-password").disabled = busy || !isConfigured;
+}
+
+function authMode(mode = "login") {
+  $("login-form").hidden = mode !== "login";
+  $("login-options").hidden = mode !== "login";
+  $("recovery-form").hidden = mode !== "recovery";
+  $("password-form").hidden = mode !== "password";
+  $("login-title").textContent = {
+    login: "Panel de administración",
+    recovery: "Recuperá tu acceso",
+    password: "Elegí tu contraseña",
+  }[mode];
+  $("login-lead").textContent = {
+    login: "Ingresá con la cuenta autorizada del peluquero para editar precios y bloquear horarios.",
+    recovery: "Te enviaremos un enlace para elegir una nueva contraseña. Revisá también el correo no deseado.",
+    password: "Guardá tu contraseña y después ingresá al panel con tu correo.",
+  }[mode];
+}
+
+function showPasswordSetup() {
+  showLogin();
+  authMode("password");
+  $("password-account").textContent = `Cuenta: ${currentUserEmail()}`;
+  setLoginBusy(false);
+  $("new-password").focus();
+}
+
+async function backToLogin() {
+  if (state.busy) return;
+  setLoginBusy(true);
+  if (needsPasswordSetup()) await signOut();
+  $("password-form").reset();
+  showLogin();
+  setLoginBusy(false);
+  $("login-email").focus();
+}
+
+async function handleRecovery(event) {
+  event.preventDefault();
+  if (state.busy || !isConfigured || !$("recovery-form").reportValidity()) return;
+  setLoginBusy(true);
+  loginFeedback("Enviando enlace…");
+  try {
+    await requestPasswordReset($("recovery-email").value.trim());
+    loginFeedback("Si existe una cuenta con ese correo, recibirás un enlace para elegir tu contraseña. Revisá tu bandeja de entrada y spam.");
+  } catch (error) {
+    loginFeedback(error.message || "No pudimos enviar el correo. Volvé a intentar.", "error");
+  } finally {
+    setLoginBusy(false);
   }
 }
 
-function showAccessHelp(error) {
-  if (["CONFIG", "NETWORK", "MIGRATION", "42501", "invalid_api_key"].includes(error?.code)) {
-    $("admin-setup").open = true;
+async function handlePassword(event) {
+  event.preventDefault();
+  if (state.busy || !isConfigured || !$("password-form").reportValidity()) return;
+  const password = $("new-password").value;
+  if (password !== $("confirm-password").value) {
+    loginFeedback("Las contraseñas no coinciden. Volvé a escribirlas.", "error");
+    $("confirm-password").focus();
+    return;
+  }
+  setLoginBusy(true);
+  loginFeedback("Guardando contraseña…");
+  const email = currentUserEmail();
+  try {
+    await setAccountPassword(password);
+    $("password-form").reset();
+    $("login-email").value = email;
+    showLogin("Contraseña guardada. Ingresá con tu correo y tu nueva contraseña.");
+    setLoginBusy(false);
+    $("login-password").focus();
+  } catch (error) {
+    if (error.status === 401 || error.code === "ACCOUNT_LINK" || !hasSession()) {
+      await signOut();
+      $("password-form").reset();
+      showLogin("El enlace venció. Pedí otro desde «Olvidé mi contraseña».", "error");
+    } else {
+      loginFeedback(error.message || "No pudimos guardar la contraseña. Volvé a intentar.", "error");
+    }
+  } finally {
+    setLoginBusy(false);
   }
 }
 
@@ -241,6 +324,7 @@ function showLogin(message = "", type = "ok") {
   $("panel-view").hidden = true;
   $("login-view").hidden = false;
   document.body.dataset.auth = "signed-out";
+  authMode();
   loginFeedback(message, type);
   if (message) {
     requestAnimationFrame(() => $("login-status").scrollIntoView({ block: "nearest" }));
@@ -546,7 +630,7 @@ async function loadData() {
     if (error?.code === "PGRST202") {
       throw Object.assign(
         new Error(
-          "Faltan funciones del panel en Supabase. Aplicá las migraciones pendientes en orden, incluida 202610290001_panel_integration.sql (paso 2 de la ayuda).",
+          "La configuración del panel está incompleta. Contactá al administrador del sitio.",
         ),
         { code: "MIGRATION" },
       );
@@ -578,6 +662,10 @@ async function loadData() {
 }
 
 async function enterPanel() {
+  if (needsPasswordSetup()) {
+    showPasswordSetup();
+    return;
+  }
   setLoginBusy(true);
   loginFeedback("Comprobando sesión…");
   try {
@@ -590,11 +678,10 @@ async function enterPanel() {
     await loadData();
     showPanel();
   } catch (error) {
-    showAccessHelp(error);
     if (authFailure(error)) {
       await leaveToLogin(
         error?.code === "42501"
-          ? "Tu cuenta existe, pero no tiene permiso de administrador. Agregá su UUID a jc_private.authorized_admins desde SQL Editor (paso 3 de la ayuda)."
+          ? "Tu cuenta existe, pero no tiene permiso de administrador. Contactá al responsable del sitio para habilitar tu acceso."
           : "La sesión venció. Ingresá nuevamente.",
       );
       return;
@@ -609,7 +696,6 @@ async function handleLogin(event) {
   if (state.busy) return;
   if (!isConfigured) {
     showLogin(configurationIssue, "error");
-    $("admin-setup").open = true;
     return;
   }
   loginFeedback();
@@ -632,7 +718,6 @@ async function handleLogin(event) {
     }
     await enterPanel();
   } catch (error) {
-    showAccessHelp(error);
     showLogin(error.message || "No pudimos iniciar sesión.", "error");
     setLoginBusy(false);
   }
@@ -994,6 +1079,18 @@ function handleBlocksClick(event) {
 
 function bindEvents() {
   $("login-form").addEventListener("submit", handleLogin);
+  $("recovery-form").addEventListener("submit", handleRecovery);
+  $("password-form").addEventListener("submit", handlePassword);
+  $("forgot-password").addEventListener("click", () => {
+    if (state.busy) return;
+    authMode("recovery");
+    loginFeedback();
+    $("recovery-email").value = $("login-email").value.trim();
+    $("recovery-email").focus();
+  });
+  document.querySelectorAll("[data-back-login]").forEach((button) => {
+    button.addEventListener("click", backToLogin);
+  });
   $("logout-button").addEventListener("click", handleLogout);
   $("refresh-panel").addEventListener("click", refreshPanel);
   $("prices-form").addEventListener("submit", savePrices);
@@ -1022,12 +1119,16 @@ async function boot() {
   blockDate.value = todayISO();
   syncBlockFields();
 
+  setLoginBusy(true);
+  await acceptAccountLink();
   if (!isConfigured) {
     showLogin(configurationIssue, "error");
-    $("admin-setup").open = true;
     setLoginBusy(false);
+  } else if (needsPasswordSetup()) {
+    showPasswordSetup();
   } else if (!hasSession()) {
     showLogin("Ingresá con la cuenta autorizada del peluquero.");
+    setLoginBusy(false);
   } else {
     await enterPanel();
   }

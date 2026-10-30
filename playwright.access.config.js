@@ -15,6 +15,8 @@ export default defineConfig({
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", use: { ...devices["iPhone 13"], defaultBrowserType: "chromium" } },
+    { name: "firefox-responsive", testMatch: "**/responsive.spec.js", use: { ...devices["Desktop Firefox"] } },
+    { name: "safari-responsive", testMatch: "**/responsive.spec.js", use: { ...devices["iPhone 13"] } },
   ],
   webServer: [
     {

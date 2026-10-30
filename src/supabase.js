@@ -70,7 +70,7 @@ async function request(path, body, token, method = "POST") {
     });
   } catch {
     throw failure(
-      "No pudimos conectar con Supabase. Revisá tu conexión, la URL configurada y que el proyecto esté activo (paso 1 de la ayuda).",
+      "No pudimos conectar con Supabase. Revisá tu conexión. Si el problema continúa, pedile al responsable del sitio que compruebe la URL y que el proyecto esté activo.",
     );
   }
   if (response.status === 204) return null;
@@ -99,6 +99,9 @@ async function request(path, body, token, method = "POST") {
       email_not_confirmed: "Confirmá tu correo antes de ingresar.",
       user_not_found: "El correo o la contraseña son incorrectos.",
       weak_password: "La contraseña no cumple la política de seguridad.",
+      same_password: "Elegí una contraseña distinta de la anterior.",
+      otp_expired: "El enlace venció o ya fue usado. Solicitá uno nuevo desde «Olvidé mi contraseña».",
+      over_email_send_rate_limit: "Esperá unos minutos antes de pedir otro correo.",
     };
     let message = messages[code];
     if (response.status === 401 && !message) {
@@ -147,6 +150,7 @@ export async function getSession() {
       if (generation !== epoch) return session;
       const stored = {
         ...next,
+        password_setup: session?.password_setup,
         expires_at: Date.now() / 1000 + next.expires_in,
       };
       writeSession(stored);
@@ -188,9 +192,83 @@ export async function signOut() {
   }
 }
 
+export function needsPasswordSetup() {
+  return Boolean(session?.password_setup);
+}
+
+// Los enlaces estándar de Supabase vuelven con tokens en el fragmento.
+// Se limpian antes de hacer red; /user valida el token con Auth, no con un JWT local.
+export async function acceptAccountLink() {
+  const url = new URL(window.location.href);
+  const hash = new URLSearchParams(url.hash.slice(1));
+  const authKeys = ["access_token", "refresh_token", "expires_in", "expires_at", "token_type", "type", "token_hash", "code", "error", "error_code", "error_description"];
+  if (!authKeys.some((name) => hash.has(name) || url.searchParams.has(name))) return false;
+  const params = hash.has("access_token") || hash.has("error") ? hash : url.searchParams;
+  const values = new URLSearchParams(params);
+  for (const name of authKeys) {
+    url.searchParams.delete(name);
+    hash.delete(name);
+  }
+  url.hash = hash.toString();
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  const generation = ++epoch;
+  writeSession(null);
+  const type = values.get("type");
+  const invalid = () => failure("El enlace venció, ya fue usado o no es válido. Solicitá uno nuevo desde «Olvidé mi contraseña».", "ACCOUNT_LINK");
+  if (values.has("error") || !["invite", "recovery"].includes(type)) throw invalid();
+  let next;
+  if (values.get("token_hash")) {
+    next = await request("/auth/v1/verify", { token_hash: values.get("token_hash"), type });
+  } else {
+    next = {
+      access_token: values.get("access_token"),
+      refresh_token: values.get("refresh_token"),
+      expires_in: Number(values.get("expires_in")),
+    };
+  }
+  if (!next?.access_token || !next.refresh_token) throw invalid();
+  let user;
+  try {
+    user = await request("/auth/v1/user", undefined, next.access_token, "GET");
+  } catch (error) {
+    if (error.status === 401 || error.status === 403) throw invalid();
+    throw error;
+  }
+  if (!user?.id || !user.email) throw invalid();
+  if (generation !== epoch) return false;
+  const ttl = Number(next.expires_in);
+  writeSession({
+    ...next,
+    user,
+    password_setup: type,
+    expires_at: Date.now() / 1000 + (Number.isFinite(ttl) && ttl > 0 ? ttl : 0),
+  });
+  return true;
+}
+
+export async function requestPasswordReset(email) {
+  const redirect = new URL(window.location.href);
+  redirect.search = "";
+  redirect.hash = "";
+  return request(`/auth/v1/recover?redirect_to=${encodeURIComponent(redirect.href)}`, { email });
+}
+
+export async function setAccountPassword(password) {
+  const current = await getSession();
+  if (!current?.password_setup) {
+    throw failure("Abrí el enlace de tu correo para elegir una contraseña.", "ACCOUNT_LINK");
+  }
+  await request("/auth/v1/user", { password }, current.access_token, "PUT");
+  // Pedir login con la nueva clave: la autorización del panel sigue en PostgreSQL.
+  await signOut();
+}
+
 export async function rpc(name, args = {}) {
   if (!/^[a-z_]+$/.test(name)) throw failure("Operación inválida.", "CONFIG");
   const current = await getSession();
+  if (current?.password_setup) {
+    throw failure("Primero guardá tu contraseña para entrar al panel.", "ACCOUNT_LINK");
+  }
   const generation = epoch;
   try {
     return await request(

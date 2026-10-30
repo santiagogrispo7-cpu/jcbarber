@@ -10,6 +10,7 @@
       content="Panel de JC Barberhouse: actualizá los precios y bloqueá los horarios en los que no podés atender."
     />
     <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
     <link
       rel="icon"
       type="image/png"
@@ -154,7 +155,7 @@
         </a>
         <p class="admin-eyebrow">Acceso privado</p>
         <h1 id="login-title">Panel de administración</h1>
-        <p class="admin-login-lead">
+        <p class="admin-login-lead" id="login-lead">
           Ingresá con la cuenta autorizada del peluquero para editar precios y
           bloquear horarios.
         </p>
@@ -188,36 +189,33 @@
             Ingresar
           </button>
         </form>
-        <p class="admin-login-status" id="login-status" role="status" aria-live="polite"></p>
-        <details class="admin-setup" id="admin-setup">
-          <summary>Cómo habilitar al administrador</summary>
-          <div class="admin-setup-content">
-            <p>La conexión del sitio y la cuenta del peluquero se configuran por separado. Estos pasos los hace quien administra el proyecto.</p>
-            <ol>
-              <li>
-                <strong>Conectá el sitio a Supabase.</strong>
-                En el proyecto activo, abrí <b>Connect</b> o <b>Settings → API</b> y copiá la URL y la clave pública <b>publishable/anon</b> del mismo proyecto.
-                <pre><code>VITE_SUPABASE_URL=https://TU-PROYECTO.supabase.co
-VITE_SUPABASE_ANON_KEY=TU-CLAVE-PUBLICA</code></pre>
-                <p><b>En tu computadora:</b> guardalas en <code>.env</code>, en la raíz del proyecto, y reiniciá <code>npm.cmd run dev</code>. Abrí la dirección que muestra Vite, seguida de <code>/admin/</code>.</p>
-                <p><b>En Vercel:</b> agregalas en <b>Settings → Environment Variables</b> para el entorno que usás y hacé <b>Redeploy</b>. En otro hosting, ejecutá <code>npm.cmd run build</code> con esas variables y publicá <code>dist/</code>.</p>
-                <p>Si no conecta, verificá que el proyecto esté activo y que su URL sea correcta. La contraseña de la cuenta y las claves <code>service_role</code> / <code>sb_secret_…</code> nunca van en estas variables.</p>
-              </li>
-              <li>
-                <strong>Prepará la base de datos.</strong>
-                En <b>Supabase → SQL Editor</b>, ejecutá las migraciones pendientes de <code>supabase/migrations/</code> en orden de fecha, desde <code>202610190001_booking_backend.sql</code> hasta <code>202610290001_panel_integration.sql</code>. En un proyecto nuevo son cinco archivos. No repitas las ya aplicadas.
-              </li>
-              <li>
-                <strong>Creá y autorizá la cuenta.</strong>
-                En <b>Authentication → Users → Add user → Create new user</b>, cargá el correo real del peluquero y una contraseña, y marcá el correo como confirmado (<b>Auto Confirm User</b>). Usá la creación con contraseña para este panel. Copiá el <b>User UID</b> y ejecutá en <b>SQL Editor</b>:
-                <pre><code>insert into jc_private.authorized_admins (user_id)
-values ('UUID-DEL-USUARIO'::uuid)
-on conflict (user_id) do nothing;</code></pre>
-                Reemplazá <code>UUID-DEL-USUARIO</code> por el UID copiado. Después ingresá aquí con ese correo y contraseña. Crear un usuario en Auth no le otorga permiso de administrador por sí solo.
-              </li>
-            </ol>
+        <div id="login-options" class="admin-login-options">
+          <button type="button" class="admin-button" id="forgot-password">Olvidé mi contraseña</button>
+          <p class="admin-login-note">¿Es tu primer ingreso? Abrí la invitación que recibiste por correo y elegí tu propia contraseña.</p>
+        </div>
+        <form class="admin-login-form" id="recovery-form" aria-describedby="login-status" hidden>
+          <div class="admin-field">
+            <label for="recovery-email">Correo de tu cuenta</label>
+            <input id="recovery-email" name="email" type="email" autocomplete="email" required />
           </div>
-        </details>
+          <button class="admin-button admin-button-primary" type="submit">Enviar enlace</button>
+          <button class="admin-button" type="button" data-back-login>Volver al ingreso</button>
+        </form>
+        <form class="admin-login-form" id="password-form" aria-describedby="login-status password-help" hidden>
+          <p class="admin-login-note" id="password-account"></p>
+          <p class="admin-login-note" id="password-help">Usá al menos 8 caracteres. Esta contraseña es sólo tuya: no necesitás compartirla con quien administra el sitio.</p>
+          <div class="admin-field">
+            <label for="new-password">Nueva contraseña</label>
+            <input id="new-password" name="password" type="password" autocomplete="new-password" minlength="8" required />
+          </div>
+          <div class="admin-field">
+            <label for="confirm-password">Repetí la contraseña</label>
+            <input id="confirm-password" name="confirmation" type="password" autocomplete="new-password" minlength="8" required />
+          </div>
+          <button class="admin-button admin-button-primary" type="submit">Guardar contraseña</button>
+          <button class="admin-button" type="button" data-back-login>Cancelar y volver</button>
+        </form>
+        <p class="admin-login-status" id="login-status" role="status" aria-live="polite"></p>
         <noscript><p class="admin-login-note">Activá JavaScript para iniciar sesión en el panel.</p></noscript>
         <p class="admin-login-note">
           Acceso exclusivo para el peluquero autorizado. Si no podés ingresar,

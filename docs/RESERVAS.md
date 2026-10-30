@@ -1,10 +1,10 @@
 # Reservas reales y panel de administración — guía de activación
 
-> **Acceso al panel actual (2026-10-29):** seguir [ADMIN_ACCESO.md](ADMIN_ACCESO.md).
-> `/admin/` ahora sólo edita precios y bloqueos. Las secciones de agenda,
-> invitaciones, recuperación y entrega de esta guía describen el panel anterior;
-> sus controles no están en la interfaz actual. Crear la cuenta con contraseña
-> desde Auth y autorizar su UUID según la guía vigente.
+> **Acceso al panel actual (2026-10-30):** seguir [ADMIN_ACCESO.md](ADMIN_ACCESO.md).
+> `/admin/` edita precios y bloqueos, acepta invitaciones para elegir contraseña
+> y ofrece recuperación por correo. Invitar y autorizar el UUID según la guía
+> vigente. Las secciones de agenda y transferencia de esta guía describen el panel
+> anterior; sus controles específicos no están en la interfaz actual.
 
 Sistema de turnos integrado en la página de JC Barberhouse, con backend
 Supabase (PostgreSQL + Auth), validación atómica en el servidor y panel

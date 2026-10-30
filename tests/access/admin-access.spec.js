@@ -38,7 +38,7 @@ async function mockBackend(page, snapshotError) {
   });
 }
 
-test("sin variables: ayuda accionable, sin falso estado de carga y accesible", async ({ page }) => {
+test("sin variables: diagnóstico sin ayuda técnica ni falso estado de carga", async ({ page }) => {
   const requests = [];
   page.on("request", (request) => {
     if (/\/auth\/v1|\/rest\/v1/.test(request.url())) requests.push(request.url());
@@ -47,8 +47,8 @@ test("sin variables: ayuda accionable, sin falso estado de carga y accesible", a
   await expect(page.locator("body")).toHaveAttribute("data-ready", "true");
   await expect(page.locator("#login-status")).toContainText("VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY");
   await expect(page.locator("#login-status")).toContainText("nuevo despliegue");
-  await expect(page.locator("#admin-setup")).toHaveAttribute("open", "");
-  await expect(page.locator("#admin-setup")).toContainText("authorized_admins");
+  await expect(page.locator("#admin-setup")).toHaveCount(0);
+  await expect(page.getByText("Cómo habilitar al administrador", { exact: true })).toHaveCount(0);
   await expect(page.locator("#login-form")).toHaveAttribute("aria-busy", "false");
   await expect(page.locator("#login-submit")).toBeDisabled();
   await expect(page.locator("#panel-view")).toBeHidden();
@@ -75,7 +75,7 @@ test("cuenta autorizada: abre precios y horarios, recarga y cierra sesión", asy
   page.on("pageerror", (error) => errors.push(error.message));
   await mockBackend(page);
   await openLogin(page);
-  await expect(page.locator("#admin-setup")).not.toHaveAttribute("open", "");
+  await expect(page.locator("#admin-setup")).toHaveCount(0);
   await login(page);
   await expect(page.locator("#panel-view")).toBeVisible();
   await expect(page.locator("#account-email")).toHaveText(user.email);
@@ -90,23 +90,24 @@ test("cuenta autorizada: abre precios y horarios, recarga y cierra sesión", asy
   expect(errors).toEqual([]);
 });
 
-test("cuenta sin autorización: muestra el alta SQL y descarta la sesión", async ({ page }) => {
+test("cuenta sin autorización: indica contactar al responsable y descarta la sesión", async ({ page }) => {
   await mockBackend(page, { status: 403, code: "42501" });
   await openLogin(page);
   await login(page);
   await expect(page.locator("#login-status")).toContainText("no tiene permiso de administrador");
-  await expect(page.locator("#admin-setup")).toHaveAttribute("open", "");
+  await expect(page.locator("#login-status")).toContainText("Contactá al responsable");
+  await expect(page.locator("#admin-setup")).toHaveCount(0);
   await expect(page.locator("#panel-view")).toBeHidden();
   await expect(page.locator("#login-submit")).toBeEnabled();
   expect(await page.evaluate((key) => sessionStorage.getItem(key), sessionKey)).toBeNull();
 });
 
-test("base sin migraciones: indica el orden y mantiene cerrado el panel", async ({ page }) => {
+test("base sin migraciones: informa configuración incompleta y mantiene cerrado el panel", async ({ page }) => {
   await mockBackend(page, { status: 404, code: "PGRST202" });
   await openLogin(page);
   await login(page);
-  await expect(page.locator("#login-status")).toContainText("migraciones pendientes en orden");
-  await expect(page.locator("#admin-setup")).toHaveAttribute("open", "");
+  await expect(page.locator("#login-status")).toContainText("configuración del panel está incompleta");
+  await expect(page.locator("#admin-setup")).toHaveCount(0);
   await expect(page.locator("#panel-view")).toBeHidden();
   await expect(page.locator("#login-submit")).toBeEnabled();
 });
@@ -132,7 +133,7 @@ test("proyecto inaccesible: permite reintentar y explica URL y estado", async ({
   await openLogin(page);
   await login(page);
   await expect(page.locator("#login-status")).toContainText("que el proyecto esté activo");
-  await expect(page.locator("#admin-setup")).toHaveAttribute("open", "");
+  await expect(page.locator("#admin-setup")).toHaveCount(0);
   await expect(page.locator("#login-submit")).toBeEnabled();
   await expect(page.locator("#panel-view")).toBeHidden();
 });

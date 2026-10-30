@@ -8,8 +8,10 @@ que antes, solicitando turnos por WhatsApp.
 
 **Acceso al administrador:** si aparece el aviso de variables Supabase faltantes,
 seguí [docs/ADMIN_ACCESO.md](docs/ADMIN_ACCESO.md): abrir con Vite, configurar el
-proyecto activo, aplicar las cinco migraciones pendientes y crear/autorizar la
-cuenta desde Supabase. `panel-admin.html` redirige al panel actual en `/admin/`.
+proyecto activo y aplicar las migraciones pendientes. Para entregar el panel al
+peluquero, invitá su correo y autorizá su UUID una sola vez: él elige su contraseña
+desde el enlace y puede recuperarla con **Olvidé mi contraseña**. La guía detalla
+publicación HTTPS, redirects y SMTP. `panel-admin.html` redirige a `/admin/`.
 
 ## Abrir la página ahora
 

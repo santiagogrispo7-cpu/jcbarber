@@ -4,7 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta http-equiv="refresh" content="0; url=./admin/" />
+    <meta name="referrer" content="no-referrer" />
+    <script>
+      const destination = new URL("./admin/", window.location.href);
+      destination.search = window.location.search;
+      destination.hash = window.location.hash;
+      window.location.replace(destination.href);
+    </script>
     <link rel="stylesheet" href="./admin.css" />
     <title>Panel de administración · JC Barberhouse</title>
   </head>
@@ -14,7 +20,7 @@
         <h1>Acceso al panel</h1>
         <p class="admin-login-lead">El panel de administración está en la ruta <code>/admin/</code>.</p>
         <p class="admin-login-footer"><a href="./admin/">Ir al panel de administración</a></p>
-        <p class="admin-login-note">Para abrirlo en tu computadora, ejecutá <code>npm.cmd run dev</code> y usá la dirección que indica Vite. En el panel encontrás los pasos para conectar Supabase y habilitar tu cuenta.</p>
+        <p class="admin-login-note">Ingresá con tu cuenta autorizada. Si olvidaste tu contraseña, podés recuperarla desde la pantalla de ingreso.</p>
       </div>
     </main>
   </body>
