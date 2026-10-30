@@ -2,8 +2,13 @@
 // Sólo se publica la clave publishable/anon; las operaciones administrativas
 // se autorizan en PostgreSQL y nunca desde el navegador.
 const env = import.meta.env || {};
-const base = (env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
-const key = env.VITE_SUPABASE_ANON_KEY || "";
+const clean = (value) =>
+  String(value ?? "")
+    .trim()
+    .replace(/^(['"])(.*)\1$/, "$2")
+    .trim();
+const base = clean(env.VITE_SUPABASE_URL).replace(/\/$/, "");
+const key = clean(env.VITE_SUPABASE_ANON_KEY);
 const STORAGE_KEY = "jcbarber.admin.session.v1";
 
 export const isConfigured = Boolean(base && key);

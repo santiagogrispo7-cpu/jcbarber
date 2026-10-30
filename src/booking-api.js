@@ -1,8 +1,13 @@
 // Supabase's public HTTP APIs. Only the publishable/anon key belongs in this build.
 // Administrator tokens live in memory: closing/reloading the page requires login.
 const env = import.meta.env || {};
-const base = (env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
-const key = env.VITE_SUPABASE_ANON_KEY || "";
+const clean = (value) =>
+  String(value ?? "")
+    .trim()
+    .replace(/^(['"])(.*)\1$/, "$2")
+    .trim();
+const base = clean(env.VITE_SUPABASE_URL).replace(/\/$/, "");
+const key = clean(env.VITE_SUPABASE_ANON_KEY);
 export const isConfigured = Boolean(base && key);
 let session = null;
 let epoch = 0;
