@@ -158,7 +158,7 @@
           Ingresá con la cuenta autorizada del peluquero para editar precios y
           bloquear horarios.
         </p>
-        <form class="admin-login-form" id="login-form" novalidate>
+        <form class="admin-login-form" id="login-form" aria-describedby="login-status" novalidate>
           <div class="admin-field">
             <label for="login-email">Correo electrónico</label>
             <input
@@ -189,6 +189,36 @@
           </button>
         </form>
         <p class="admin-login-status" id="login-status" role="status" aria-live="polite"></p>
+        <details class="admin-setup" id="admin-setup">
+          <summary>Cómo habilitar al administrador</summary>
+          <div class="admin-setup-content">
+            <p>La conexión del sitio y la cuenta del peluquero se configuran por separado. Estos pasos los hace quien administra el proyecto.</p>
+            <ol>
+              <li>
+                <strong>Conectá el sitio a Supabase.</strong>
+                En el proyecto activo, abrí <b>Connect</b> o <b>Settings → API</b> y copiá la URL y la clave pública <b>publishable/anon</b> del mismo proyecto.
+                <pre><code>VITE_SUPABASE_URL=https://TU-PROYECTO.supabase.co
+VITE_SUPABASE_ANON_KEY=TU-CLAVE-PUBLICA</code></pre>
+                <p><b>En tu computadora:</b> guardalas en <code>.env</code>, en la raíz del proyecto, y reiniciá <code>npm.cmd run dev</code>. Abrí la dirección que muestra Vite, seguida de <code>/admin/</code>.</p>
+                <p><b>En Vercel:</b> agregalas en <b>Settings → Environment Variables</b> para el entorno que usás y hacé <b>Redeploy</b>. En otro hosting, ejecutá <code>npm.cmd run build</code> con esas variables y publicá <code>dist/</code>.</p>
+                <p>Si no conecta, verificá que el proyecto esté activo y que su URL sea correcta. La contraseña de la cuenta y las claves <code>service_role</code> / <code>sb_secret_…</code> nunca van en estas variables.</p>
+              </li>
+              <li>
+                <strong>Prepará la base de datos.</strong>
+                En <b>Supabase → SQL Editor</b>, ejecutá las migraciones pendientes de <code>supabase/migrations/</code> en orden de fecha, desde <code>202610190001_booking_backend.sql</code> hasta <code>202610290001_panel_integration.sql</code>. En un proyecto nuevo son cinco archivos. No repitas las ya aplicadas.
+              </li>
+              <li>
+                <strong>Creá y autorizá la cuenta.</strong>
+                En <b>Authentication → Users → Add user → Create new user</b>, cargá el correo real del peluquero y una contraseña, y marcá el correo como confirmado (<b>Auto Confirm User</b>). Usá la creación con contraseña para este panel. Copiá el <b>User UID</b> y ejecutá en <b>SQL Editor</b>:
+                <pre><code>insert into jc_private.authorized_admins (user_id)
+values ('UUID-DEL-USUARIO'::uuid)
+on conflict (user_id) do nothing;</code></pre>
+                Reemplazá <code>UUID-DEL-USUARIO</code> por el UID copiado. Después ingresá aquí con ese correo y contraseña. Crear un usuario en Auth no le otorga permiso de administrador por sí solo.
+              </li>
+            </ol>
+          </div>
+        </details>
+        <noscript><p class="admin-login-note">Activá JavaScript para iniciar sesión en el panel.</p></noscript>
         <p class="admin-login-note">
           Acceso exclusivo para el peluquero autorizado. Si no podés ingresar,
           contactá al administrador del sitio.

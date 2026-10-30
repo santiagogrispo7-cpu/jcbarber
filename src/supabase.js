@@ -7,6 +7,12 @@ const key = env.VITE_SUPABASE_ANON_KEY || "";
 const STORAGE_KEY = "jcbarber.admin.session.v1";
 
 export const isConfigured = Boolean(base && key);
+// Un servidor estático no transforma import.meta.env ni lee el archivo .env.
+export const configurationIssue = isConfigured
+  ? ""
+  : !env.MODE
+    ? "Abriste el código fuente sin Vite. Ejecutá npm.cmd run dev desde la carpeta del proyecto y abrí la dirección que indique. Un servidor estático no carga el archivo .env."
+    : `Falta configurar ${[!base && "VITE_SUPABASE_URL", !key && "VITE_SUPABASE_ANON_KEY"].filter(Boolean).join(" y ")} en esta versión del sitio. Completá la configuración y reiniciá Vite o generá un nuevo despliegue.`;
 
 let session = readStoredSession();
 let epoch = 0;
@@ -64,13 +70,18 @@ async function request(path, body, token, method = "POST") {
     });
   } catch {
     throw failure(
-      "No pudimos conectar con Supabase. Revisá la conexión y reintentá.",
+      "No pudimos conectar con Supabase. Revisá tu conexión, la URL configurada y que el proyecto esté activo (paso 1 de la ayuda).",
     );
   }
   if (response.status === 204) return null;
   const result = await response.json().catch(() => null);
   if (!response.ok) {
-    const code = result?.code || result?.error_code || String(response.status);
+    const code =
+      result?.code ||
+      result?.error_code ||
+      (result?.message === "Invalid API key"
+        ? "invalid_api_key"
+        : String(response.status));
     const messages = {
       "42501": "Tu usuario no está autorizado para administrar la agenda.",
       "23P01":
@@ -79,6 +90,8 @@ async function request(path, body, token, method = "POST") {
       "40001": "La agenda está siendo actualizada. Reintentá la operación.",
       "22023": result?.message,
       "55000": result?.message,
+      invalid_api_key:
+        "La clave pública de Supabase no es válida. Copiá la clave publishable/anon del mismo proyecto que la URL y reconstruí el sitio.",
       PGRST202:
         "Falta aplicar una migración de Supabase o el contrato RPC no coincide.",
       invalid_credentials: "El correo o la contraseña son incorrectos.",
@@ -88,7 +101,7 @@ async function request(path, body, token, method = "POST") {
       weak_password: "La contraseña no cumple la política de seguridad.",
     };
     let message = messages[code];
-    if (response.status === 401) {
+    if (response.status === 401 && !message) {
       message = "La sesión venció. Ingresá nuevamente.";
     } else if (response.status === 429) {
       message = "Hubo demasiados intentos. Esperá unos minutos.";

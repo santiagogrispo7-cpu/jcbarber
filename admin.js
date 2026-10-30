@@ -1,5 +1,6 @@
 /* Panel /admin: Supabase Auth + RPC. No hay claves privadas ni datos locales. */
 import {
+  configurationIssue,
   currentUserEmail,
   getSession,
   hasSession,
@@ -225,7 +226,15 @@ function icon(name) {
 function setLoginBusy(busy) {
   state.busy = busy;
   $("login-form").setAttribute("aria-busy", String(busy));
-  for (const node of $("login-form").elements) node.disabled = busy;
+  for (const node of $("login-form").elements) {
+    node.disabled = busy || !isConfigured;
+  }
+}
+
+function showAccessHelp(error) {
+  if (["CONFIG", "NETWORK", "MIGRATION", "42501", "invalid_api_key"].includes(error?.code)) {
+    $("admin-setup").open = true;
+  }
 }
 
 function showLogin(message = "", type = "ok") {
@@ -537,7 +546,7 @@ async function loadData() {
     if (error?.code === "PGRST202") {
       throw Object.assign(
         new Error(
-          "Falta aplicar la migración 202610290001_panel_integration.sql en Supabase.",
+          "Faltan funciones del panel en Supabase. Aplicá las migraciones pendientes en orden, incluida 202610290001_panel_integration.sql (paso 2 de la ayuda).",
         ),
         { code: "MIGRATION" },
       );
@@ -581,10 +590,11 @@ async function enterPanel() {
     await loadData();
     showPanel();
   } catch (error) {
+    showAccessHelp(error);
     if (authFailure(error)) {
       await leaveToLogin(
         error?.code === "42501"
-          ? "Tu cuenta no está autorizada para administrar este panel."
+          ? "Tu cuenta existe, pero no tiene permiso de administrador. Agregá su UUID a jc_private.authorized_admins desde SQL Editor (paso 3 de la ayuda)."
           : "La sesión venció. Ingresá nuevamente.",
       );
       return;
@@ -597,6 +607,11 @@ async function enterPanel() {
 async function handleLogin(event) {
   event.preventDefault();
   if (state.busy) return;
+  if (!isConfigured) {
+    showLogin(configurationIssue, "error");
+    $("admin-setup").open = true;
+    return;
+  }
   loginFeedback();
   const email = $("login-email").value.trim();
   const password = $("login-password").value;
@@ -617,6 +632,7 @@ async function handleLogin(event) {
     }
     await enterPanel();
   } catch (error) {
+    showAccessHelp(error);
     showLogin(error.message || "No pudimos iniciar sesión.", "error");
     setLoginBusy(false);
   }
@@ -1007,11 +1023,9 @@ async function boot() {
   syncBlockFields();
 
   if (!isConfigured) {
-    showLogin(
-      "Falta configurar VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en el despliegue.",
-      "error",
-    );
-    setLoginBusy(true);
+    showLogin(configurationIssue, "error");
+    $("admin-setup").open = true;
+    setLoginBusy(false);
   } else if (!hasSession()) {
     showLogin("Ingresá con la cuenta autorizada del peluquero.");
   } else {

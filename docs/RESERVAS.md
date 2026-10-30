@@ -1,5 +1,11 @@
 # Reservas reales y panel de administración — guía de activación
 
+> **Acceso al panel actual (2026-10-29):** seguir [ADMIN_ACCESO.md](ADMIN_ACCESO.md).
+> `/admin/` ahora sólo edita precios y bloqueos. Las secciones de agenda,
+> invitaciones, recuperación y entrega de esta guía describen el panel anterior;
+> sus controles no están en la interfaz actual. Crear la cuenta con contraseña
+> desde Auth y autorizar su UUID según la guía vigente.
+
 Sistema de turnos integrado en la página de JC Barberhouse, con backend
 Supabase (PostgreSQL + Auth), validación atómica en el servidor y panel
 privado responsive en `/admin/`. La página pública conserva su diseño,
@@ -69,7 +75,9 @@ correo/contraseña en Supabase Auth y el UUID autorizado en PostgreSQL.
    **una sola vez cada uno y en este orden**:
    - `supabase/migrations/202610190001_booking_backend.sql`
    - `supabase/migrations/202610200001_admin_handover.sql`
-   - `supabase/migrations/202610210001_customer_services.sql`
+    - `supabase/migrations/202610210001_customer_services.sql`
+    - `supabase/migrations/202610220001_home_service_price.sql`
+    - `supabase/migrations/202610290001_panel_integration.sql`
    Ejecutar sólo las migraciones pendientes. La tercera actualiza los servicios,
    precios y franjas pedidos el 21/10/2026; conserva las reservas anteriores y
    los días habilitados por modalidad. No activa automáticamente la agenda.

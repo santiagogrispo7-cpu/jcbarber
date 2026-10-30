@@ -6,6 +6,11 @@ JavaScript**, fotografías reales y logo proporcionado. Incluye un sistema de
 privado** en `/admin/`. Sin la conexión configurada, la web funciona igual
 que antes, solicitando turnos por WhatsApp.
 
+**Acceso al administrador:** si aparece el aviso de variables Supabase faltantes,
+seguí [docs/ADMIN_ACCESO.md](docs/ADMIN_ACCESO.md): abrir con Vite, configurar el
+proyecto activo, aplicar las cinco migraciones pendientes y crear/autorizar la
+cuenta desde Supabase. `panel-admin.html` redirige al panel actual en `/admin/`.
+
 ## Abrir la página ahora
 
 **Entrega local 2026-10-22:** tres pasos: cuatro tarjetas de servicios, calendario
